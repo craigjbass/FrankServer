@@ -7,7 +7,6 @@ namespace SampleProject
     {
         static void Main(string[] args)
         {
-
             var builder = new WebApplicationBuilder();
             builder.WithRoutes(router =>
             {

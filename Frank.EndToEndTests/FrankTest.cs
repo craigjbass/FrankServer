@@ -5,7 +5,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using RestSharp;
 
-namespace Frank.Test
+namespace Frank.EndToEndTests
 {
     public class FrankTest
     {
