@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using Frank.DTO;
 
@@ -21,6 +20,12 @@ namespace Frank
             void Start(ListenOn[] listenOns);
             void RegisterRequestHandler(Action<Request, IResponseWriter> processRequest);
             void Stop();
+        }
+
+        public interface IResponseWriter
+        {
+            void WriteResponse(Response response);
+            void Flush();
         }
 
         public interface IRouter
@@ -42,24 +47,6 @@ namespace Frank
         {
             _server.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8019}});
             new Task(() => _server.RegisterRequestHandler(ProcessRequest)).Start();
-        }
-
-        public void Stop()
-        {
-            if (_exceptions.Any())
-            {
-                var exception = new Exception();
-                exception.Data.Add("Exceptions", _exceptions);
-                throw exception;
-            }
-
-            _server.Stop();
-        }
-
-        public interface IResponseWriter
-        {
-            void WriteResponse(Response response);
-            void Flush();
         }
 
         private void ProcessRequest(Request request, IResponseWriter responseWriter)
@@ -91,6 +78,18 @@ namespace Frank
             {
                 responseWriter.Flush();
             }
+        }
+
+        public void Stop()
+        {
+            if (_exceptions.Any())
+            {
+                var exception = new Exception();
+                exception.Data.Add("Exceptions", _exceptions);
+                throw exception;
+            }
+
+            _server.Stop();
         }
     }
 }
