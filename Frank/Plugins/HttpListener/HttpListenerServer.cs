@@ -1,18 +1,22 @@
 using System;
 using System.Net;
-using Frank.DTO;
+using System.Runtime.CompilerServices;
+using Frank.ExtensionPoints;
+using Frank.API.PluginDevelopers;
+using Frank.API.WebDevelopers.DTO;
 
-namespace Frank
+[assembly: InternalsVisibleTo("Frank.Tests")]
+namespace Frank.Plugins.HttpListener
 {
-    internal class HttpListenerServer : WebApplication.IServer
+    internal class HttpListenerServer : IServer
     {
-        private HttpListener _httpListener;
+        private System.Net.HttpListener _httpListener;
         private bool _running;
 
         public void Start(ListenOn[] listenOns)
         {
             _running = true;
-            _httpListener = new HttpListener();
+            _httpListener = new System.Net.HttpListener();
             foreach (var listenOn in listenOns)
             {
                 _httpListener.Prefixes.Add($"http://{listenOn.HostName}:{listenOn.Port}/");
@@ -20,16 +24,16 @@ namespace Frank
             _httpListener.Start();
         }
 
-        class ResponseWriter : WebApplication.IResponseWriter
+        class ResponseBuffer : IResponseBuffer
         {
             private readonly HttpListenerResponse _response;
 
-            public ResponseWriter(HttpListenerResponse response)
+            public ResponseBuffer(HttpListenerResponse response)
             {
                 _response = response;
             }
 
-            public void WriteResponse(Response response)
+            public void SetContentsOfBufferTo(Response response)
             {
                 _response.StatusCode = response.Status;
                 _response.OutputStream.Write(response.Body);
@@ -41,22 +45,23 @@ namespace Frank
             }
         }
         
-        public void RegisterRequestHandler(Action<Request, WebApplication.IResponseWriter> processRequest)
+        public void RegisterRequestHandler(Action<Request, IResponseBuffer> processRequest)
         {
             IAsyncResult context;
             do
             {
                 context = _httpListener.BeginGetContext(ar =>
                 {
-                    HttpListenerContext c = ((HttpListener) ar.AsyncState).EndGetContext(ar);
+                    HttpListenerContext c = ((System.Net.HttpListener) ar.AsyncState).EndGetContext(ar);
                     var response = c.Response;
                     var request = c.Request;
-                    processRequest(new Request()
+                    processRequest(new Request
                     {
                         Path = request.RawUrl
-                    }, new ResponseWriter(response));
+                    }, new ResponseBuffer(response));
                     
                 }, _httpListener);
+                
             } while (_running && context.AsyncWaitHandle.WaitOne());
         }
 

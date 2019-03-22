@@ -1,22 +1,26 @@
 using System;
+using System.ComponentModel;
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Frank.API.WebDevelopers;
 using NUnit.Framework;
 using RestSharp;
+using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
 
 namespace Frank.EndToEndTests
 {
     public class FrankTest
     {
-        private WebApplicationBuilder _builder;
+        private IWebApplicationBuilder _builder;
         private IWebApplication _webApplication;
         private IRestResponse _response;
 
         [SetUp]
         public void SetUp()
         {
-            _builder = new WebApplicationBuilder();
+            
+            _builder = System.Frank.Configure();
             _builder.ListenOn("127.0.0.1", "8019");
         }
 
@@ -81,7 +85,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanServeOk()
         {
-            _builder.WithRoutes(router => { router.Get("/success", () => 200); });
+            _builder.WithRoutes(router => { router.Get("/success", Ok); });
             StartFrank();
 
             MakeGetRequest("/success");
@@ -91,7 +95,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanServeOk2()
         {
-            _builder.WithRoutes(router => { router.Get("/okay", () => 200); });
+            _builder.WithRoutes(router => { router.Get("/okay", Ok); });
             StartFrank();
 
             MakeGetRequest("/okay");
@@ -102,7 +106,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanServeANoContentStatusCode()
         {
-            _builder.WithRoutes(router => { router.Get("/no-content", () => 201); });
+            _builder.WithRoutes(router => { router.Get("/no-content", Created); });
             StartFrank();
 
             MakeGetRequest("/no-content");

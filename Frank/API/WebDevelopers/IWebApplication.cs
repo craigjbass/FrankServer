@@ -1,4 +1,4 @@
-namespace Frank
+namespace Frank.API.WebDevelopers
 {
     public interface IWebApplication
     {

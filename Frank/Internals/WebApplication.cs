@@ -1,34 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Frank.DTO;
+using Frank.API.PluginDevelopers;
+using Frank.API.WebDevelopers;
+using Frank.API.WebDevelopers.DTO;
+using Frank.ExtensionPoints;
 
-[assembly: InternalsVisibleTo("Frank.Tests")]
-
-namespace Frank
+namespace Frank.Internals
 {
     internal class WebApplication : IWebApplication
     {
         private readonly IServer _server;
-        private readonly IRouter _router;
+        private readonly IRequestRouter _requestRouter;
         private readonly List<Exception> _exceptions = new List<Exception>();
 
-        public interface IServer
-        {
-            void Start(ListenOn[] listenOns);
-            void RegisterRequestHandler(Action<Request, IResponseWriter> processRequest);
-            void Stop();
-        }
-
-        public interface IResponseWriter
-        {
-            void WriteResponse(Response response);
-            void Flush();
-        }
-
-        public interface IRouter
+        internal interface IRequestRouter
         {
             bool CanRoute(string url);
 
@@ -37,10 +24,10 @@ namespace Frank
             );
         }
 
-        public WebApplication(IServer server, IRouter router)
+        public WebApplication(IServer server, IRequestRouter requestRouter)
         {
             _server = server;
-            _router = router;
+            _requestRouter = requestRouter;
         }
 
         public void Start()
@@ -49,18 +36,18 @@ namespace Frank
             new Task(() => _server.RegisterRequestHandler(ProcessRequest)).Start();
         }
 
-        private void ProcessRequest(Request request, IResponseWriter responseWriter)
+        private void ProcessRequest(Request request, IResponseBuffer responseBuffer)
         {
             try
             {
-                if (_router.CanRoute(request.Path))
+                if (_requestRouter.CanRoute(request.Path))
                 {
-                    var actualResponse = _router.Route(request);
-                    responseWriter.WriteResponse(actualResponse);
+                    var actualResponse = _requestRouter.Route(request);
+                    responseBuffer.SetContentsOfBufferTo(actualResponse);
                 }
                 else
                 {
-                    responseWriter.WriteResponse(new Response
+                    responseBuffer.SetContentsOfBufferTo(new Response
                     {
                         Status = 404
                     });
@@ -69,14 +56,14 @@ namespace Frank
             catch (Exception e)
             {
                 _exceptions.Add(e);
-                responseWriter.WriteResponse(new Response
+                responseBuffer.SetContentsOfBufferTo(new Response
                 {
                     Status = 500
                 }.BodyFromString(_exceptions.First().ToString()));
             }
             finally
             {
-                responseWriter.Flush();
+                responseBuffer.Flush();
             }
         }
 

@@ -1,21 +1,21 @@
 ﻿using System.Threading;
-using Frank;
+using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
 
 namespace SampleProject
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            var builder = new WebApplicationBuilder();
-            builder.WithRoutes(router =>
-            {
-                router.Get("/test", () => 200);
-            });
-            var webApplication = builder.Build();
-            webApplication.Start();
-            
-            
+            System.Frank
+                .Configure()
+                .WithRoutes(
+                    router => { router.Get("/test", () => Ok()); }
+                )
+                .Build()
+                .Start();
+
+
             SpinWait.SpinUntil(() => false);
         }
     }

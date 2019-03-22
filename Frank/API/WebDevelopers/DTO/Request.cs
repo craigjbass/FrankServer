@@ -1,4 +1,4 @@
-namespace Frank.DTO
+namespace Frank.API.WebDevelopers.DTO
 {
     public struct Request
     {
