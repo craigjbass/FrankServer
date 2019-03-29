@@ -5,7 +5,6 @@ using Frank.ExtensionPoints;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers.DTO;
 
-[assembly: InternalsVisibleTo("Frank.Tests")]
 namespace Frank.Plugins.HttpListener
 {
     internal class HttpListenerServer : IServer
