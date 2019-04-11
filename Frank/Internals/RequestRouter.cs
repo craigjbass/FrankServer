@@ -31,11 +31,15 @@ namespace Frank.Internals
 
         public Response Route(Request request)
         {
-            if (_routes.ContainsKey(request.Path))
-            {
-                return _routes[request.Path]();
-            }
-            throw new Unroutable();
+            if (IsUnroutable(request))
+                throw new Unroutable();
+            
+            return _routes[request.Path]();
+        }
+
+        private bool IsUnroutable(Request request)
+        {
+            return request.Path == null || !CanRoute(request.Path);
         }
     }
 }

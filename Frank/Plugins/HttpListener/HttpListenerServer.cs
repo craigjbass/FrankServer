@@ -54,6 +54,7 @@ namespace Frank.Plugins.HttpListener
                     HttpListenerContext c = ((System.Net.HttpListener) ar.AsyncState).EndGetContext(ar);
                     var response = c.Response;
                     var request = c.Request;
+                    Console.WriteLine($"REQUEST {request.Url}");
                     processRequest(new Request
                     {
                         Path = request.RawUrl

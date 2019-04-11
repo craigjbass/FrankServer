@@ -4,6 +4,9 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using Frank.API.WebDevelopers;
+using Frank.API.WebDevelopers.DTO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using RestSharp;
 using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
@@ -16,10 +19,34 @@ namespace Frank.EndToEndTests
         private IWebApplication _webApplication;
         private IRestResponse _response;
 
+        private void MakeGetRequest(string path)
+        {
+            var request = new RestRequest(path, Method.GET);
+            var client = new RestClient("http://127.0.0.1:8019/");
+
+            _response = client.Execute(request);
+        }
+
+        private IRestResponse TheResponse()
+        {
+            if (_response.StatusCode == HttpStatusCode.InternalServerError)
+            {
+                throw new Exception(
+                    Encoding.UTF8.GetString(_response.RawBytes)
+                );
+            }
+
+            return _response;
+        }
+
+        private JObject TheResponseBody()
+        {
+            return JsonConvert.DeserializeObject<JObject>(TheResponse().Content);
+        }
+
         [SetUp]
         public void SetUp()
         {
-            
             _builder = System.Frank.Configure();
             _builder.ListenOn("127.0.0.1", "8019");
         }
@@ -41,25 +68,6 @@ namespace Frank.EndToEndTests
             _webApplication.Stop();
         }
 
-        private void MakeGetRequest(string path)
-        {
-            var request = new RestRequest(path, Method.GET);
-            var client = new RestClient("http://127.0.0.1:8019/");
-
-            _response = client.Execute(request);
-        }
-
-        private IRestResponse TheResponse()
-        {
-            if (_response.StatusCode == HttpStatusCode.InternalServerError)
-            {
-                throw new Exception(
-                    Encoding.UTF8.GetString(_response.RawBytes)
-                );
-            }
-
-            return _response;
-        }
 
         [Test]
         public void CanServeNotFound()
@@ -101,8 +109,8 @@ namespace Frank.EndToEndTests
             MakeGetRequest("/okay");
             TheResponse().StatusCode.Should().Be(200);
         }
-        
-        
+
+
         [Test]
         public void CanServeANoContentStatusCode()
         {
@@ -111,6 +119,31 @@ namespace Frank.EndToEndTests
 
             MakeGetRequest("/no-content");
             TheResponse().StatusCode.Should().Be(201);
+        }
+
+        [Test]
+        public void CanServeSomeJsonContent()
+        {
+            {
+                _builder.WithRoutes(
+                    router =>
+                    {
+                        router.Get(
+                            "/foo/2",
+                            () => Ok().WithBody(new {Id = 2})
+                        );
+                    }
+                );
+
+                StartFrank();
+            }
+
+            {
+                MakeGetRequest("/foo/2");
+
+                TheResponse().StatusCode.Should().Be(200);
+                TheResponseBody()["Id"].Should().AllBeEquivalentTo(2);
+            }
         }
     }
 }

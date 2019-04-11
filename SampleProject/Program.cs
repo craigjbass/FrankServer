@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Frank.API.WebDevelopers.DTO;
 using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
 
 namespace SampleProject
@@ -9,8 +10,9 @@ namespace SampleProject
         {
             System.Frank
                 .Configure()
+                .ListenOn("127.0.0.1", "8000")
                 .WithRoutes(
-                    router => { router.Get("/test", () => Ok()); }
+                    router => { router.Get("/test", () => Ok().WithBody(new { Success = true })); }
                 )
                 .Build()
                 .Start();
