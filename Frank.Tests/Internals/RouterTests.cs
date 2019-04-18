@@ -63,5 +63,22 @@ namespace Frank.Tests.Internals
             _requestRouter.Get(route, () => response);
             _requestRouter.Route(new Request {Path = route}).Should().Be(response);
         }
+
+        [Test]
+        public void CanPassRequestToRoute()
+        {
+            Request? myRequest = null;
+            _requestRouter.Get("/hello", request =>
+            {
+                myRequest = request;
+                return CreateRandomResponse();
+            });
+
+
+            _requestRouter.Route(new Request {Path = "/hello"});
+
+
+            myRequest?.Path.Should().Be("/hello");
+        }
     }
 }

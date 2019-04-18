@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Frank.API.WebDevelopers.DTO;
@@ -14,6 +16,8 @@ namespace Frank.Tests.Plugins.HttpListener
     {
         private HttpListenerServer _listener;
         private IRestResponse _response;
+        private ConcurrentBag<Request> _requests;
+
 
         private void MakeGetRequest(string url, string path)
         {
@@ -39,6 +43,7 @@ namespace Frank.Tests.Plugins.HttpListener
             {
                 _listener.RegisterRequestHandler((request, buffer) =>
                 {
+                    _requests.Add(request);
                     buffer.SetContentsOfBufferTo(response);
                     buffer.Flush();
                 });
@@ -48,6 +53,7 @@ namespace Frank.Tests.Plugins.HttpListener
         [SetUp]
         public void SetUp()
         {
+            _requests = new ConcurrentBag<Request>();
             _listener = new HttpListenerServer();
         }
 
@@ -83,6 +89,42 @@ namespace Frank.Tests.Plugins.HttpListener
 
             _response.Content.Should().Be("Hello world");
             _response.StatusCode.Should().Be(200);
+        }
+
+        [Test]
+        public void CanConstructRequest()
+        {
+            _listener.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8020}});
+            SetupHttpListenerToAlwaysResponseWith(Ok().BodyFromString("Hello world"));
+
+            var request = new RestRequest("/asd", Method.GET);
+
+            request.AddParameter("z", "123");
+            request.Timeout = 100;
+            var client = new RestClient("http://127.0.0.1:8020/");
+            _response = client.Execute(request);
+
+            _requests.First().Path.Should().Be("/asd");
+            _requests.First().QueryParameters["z"].Should().Be("123");
+            _requests.First().Body.Should().Be("");
+        }
+        
+        [Test]
+        public void CanConstructRequest2()
+        {
+            _listener.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8020}});
+            SetupHttpListenerToAlwaysResponseWith(Ok().BodyFromString("Hello world"));
+
+            var request = new RestRequest("/asd", Method.GET);
+
+            request.AddParameter("j", "nice");
+            request.Timeout = 100;
+            var client = new RestClient("http://127.0.0.1:8020/");
+            _response = client.Execute(request);
+
+            _requests.First().Path.Should().Be("/asd");
+            _requests.First().QueryParameters["j"].Should().Be("nice");
+            _requests.First().Body.Should().Be("");
         }
     }
 }

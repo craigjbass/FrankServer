@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 using System.Text;
@@ -142,7 +143,38 @@ namespace Frank.EndToEndTests
                 MakeGetRequest("/foo/2");
 
                 TheResponse().StatusCode.Should().Be(200);
-                TheResponseBody()["Id"].Should().AllBeEquivalentTo(2);
+                TheResponseBody()["Id"].Value<int>().Should().Be(2);
+            }
+        }
+
+        [Test]
+        public void CanProvideRequestToRouteHandler()
+        {
+            {
+                _builder.WithRoutes(
+                    router =>
+                    {
+                        router.Get(
+                            "/foo/2",
+                            request => Ok().WithBody(request)
+                        );
+                    }
+                );
+
+                StartFrank();
+            }
+
+            {
+                var request = new RestRequest("/foo/2", Method.GET);
+                request.AddParameter("bar", "123");
+                var client = new RestClient("http://127.0.0.1:8019/");
+
+                _response = client.Execute(request);
+
+                TheResponse().StatusCode.Should().Be(200);
+                TheResponseBody()["Path"].Value<string>().Should().Be("/foo/2");
+                TheResponseBody()["QueryParameters"]["bar"].ToString().Should().Be("123");
+                TheResponseBody()["Body"].Value<string>().Should().Be("");
             }
         }
     }

@@ -12,7 +12,19 @@ namespace SampleProject
                 .Configure()
                 .ListenOn("127.0.0.1", "8000")
                 .WithRoutes(
-                    router => { router.Get("/test", () => Ok().WithBody(new { Success = true })); }
+                    router =>
+                    {
+                        router.Get("/test", () => Ok().WithBody(new {Success = true}));
+                        router.Get(
+                            "/hello",
+                            request => Ok()
+                                .WithBody(request.QueryParameters.ContainsKey("what") &&
+                                          request.QueryParameters["what"] == "hello"
+                                    ? new { message = "Yes?" }
+                                    : new { message = "Rude." }
+                                )
+                        );
+                    }
                 )
                 .Build()
                 .Start();
