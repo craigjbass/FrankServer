@@ -64,6 +64,12 @@ namespace Frank.EndToEndTests
             _webApplication.Start();
         }
 
+        private void StartFrankWithRoutes(Action<IRouteConfigurer> action)
+        {
+            _builder.WithRoutes(action);
+            StartFrank();
+        }
+
         private void StopFrank()
         {
             _webApplication.Stop();
@@ -91,91 +97,69 @@ namespace Frank.EndToEndTests
             TheResponse().StatusCode.Should().Be(404);
         }
 
-        [Test]
-        public void CanServeOk()
+        [TestCase("/success")]
+        [TestCase("/okay")]
+        public void CanServeOk(string route)
         {
-            _builder.WithRoutes(router => { router.Get("/success", Ok); });
-            StartFrank();
-
-            MakeGetRequest("/success");
+            StartFrankWithRoutes(router => { router.Get(route, Ok); });
+            MakeGetRequest(route);
             TheResponse().StatusCode.Should().Be(200);
         }
-
-        [Test]
-        public void CanServeOk2()
-        {
-            _builder.WithRoutes(router => { router.Get("/okay", Ok); });
-            StartFrank();
-
-            MakeGetRequest("/okay");
-            TheResponse().StatusCode.Should().Be(200);
-        }
-
 
         [Test]
         public void CanServeANoContentStatusCode()
         {
-            _builder.WithRoutes(router => { router.Get("/no-content", Created); });
-            StartFrank();
-
+            StartFrankWithRoutes(router => { router.Get("/no-content", Created); });
             MakeGetRequest("/no-content");
             TheResponse().StatusCode.Should().Be(201);
         }
 
         [Test]
-        public void CanServeSomeJsonContent()
+        public void CanSerializeResponseIntoHttpResponse()
         {
-            {
-                _builder.WithRoutes(
-                    router =>
-                    {
-                        router.Get(
-                            "/foo/2",
-                            () => Ok().WithBody(new {Id = 2})
-                        );
-                    }
-                );
+            StartFrankWithRoutes(
+                router =>
+                {
+                    router.Get(
+                        "/foo/2",
+                        () => Ok().WithBody(new {Id = 2})
+                    );
+                }
+            );
 
-                StartFrank();
-            }
 
-            {
-                MakeGetRequest("/foo/2");
+            MakeGetRequest("/foo/2");
 
-                TheResponse().StatusCode.Should().Be(200);
-                TheResponseBody()["Id"].Value<int>().Should().Be(2);
-            }
+            TheResponse().StatusCode.Should().Be(200);
+            TheResponseBody()["Id"].Value<int>().Should().Be(2);
         }
 
         [Test]
-        public void CanProvideRequestToRouteHandler()
+        public void CanDeserializeIncomingRequest()
         {
-            {
-                _builder.WithRoutes(
-                    router =>
-                    {
-                        router.Get(
-                            "/foo/2",
-                            request => Ok().WithBody(request)
-                        );
-                    }
-                );
+            Request? processedRequest = null;
+            StartFrankWithRoutes(
+                router =>
+                {
+                    router.Get(
+                        "/foo/2",
+                        request =>
+                        {
+                            processedRequest = request;
+                            return Ok();
+                        });
+                }
+            );
 
-                StartFrank();
-            }
+            new RestClient("http://127.0.0.1:8019/").Execute(
+                new RestRequest("/foo/2", Method.GET)
+                    .AddParameter("bar", "123")
+            );
 
-            {
-                var request = new RestRequest("/foo/2", Method.GET);
-                request.AddParameter("bar", "123");
-                var client = new RestClient("http://127.0.0.1:8019/");
-
-                _response = client.Execute(request);
-
-                TheResponse().StatusCode.Should().Be(200);
-                TheResponseBody()["Path"].Value<string>().Should().Be("/foo/2");
-                TheResponseBody()["QueryParameters"]["bar"].ToString().Should().Be("123");
-                TheResponseBody()["Body"].Value<string>().Should().Be("");
-            }
+            processedRequest.Should().NotBeNull();
+            processedRequest?.Path.Should().Be("/foo/2");
+            processedRequest?.QueryParameters["bar"].Should().Be("123");
+            processedRequest?.Body.Should().Be("");
         }
     }
 }

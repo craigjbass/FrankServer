@@ -17,13 +17,13 @@ namespace SampleProject
                         router.Get("/test", () => Ok().WithBody(new {Success = true}));
                         router.Get(
                             "/hello",
-                            request => Ok()
-                                .WithBody(request.QueryParameters.ContainsKey("what") &&
-                                          request.QueryParameters["what"] == "hello"
-                                    ? new { message = "Yes?" }
-                                    : new { message = "Rude." }
-                                )
-                        );
+                            request =>
+                            {
+                                var isHello = request.QueryParameters.ContainsKey("what") &&
+                                              request.QueryParameters["what"] == "hello";
+
+                                return Ok().WithBody(isHello ? new {message = "Yes?"} : new {message = "Rude."});
+                            });
                     }
                 )
                 .Build()
