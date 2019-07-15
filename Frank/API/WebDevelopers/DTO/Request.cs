@@ -7,5 +7,6 @@ namespace Frank.API.WebDevelopers.DTO
         public string Path;
         public string Body;
         public IReadOnlyDictionary<string, string> QueryParameters;
+        public IReadOnlyDictionary<string, string> Headers;
     }
 }

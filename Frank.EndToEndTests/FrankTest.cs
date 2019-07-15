@@ -154,12 +154,14 @@ namespace Frank.EndToEndTests
             new RestClient("http://127.0.0.1:8019/").Execute(
                 new RestRequest("/foo/2", Method.GET)
                     .AddParameter("bar", "123")
+                    .AddHeader("X-Api-Key", "1234supersecure")
             );
 
             processedRequest.Should().NotBeNull();
             processedRequest?.Path.Should().Be("/foo/2");
             processedRequest?.QueryParameters["bar"].Should().Be("123");
             processedRequest?.Body.Should().Be("");
+            processedRequest?.Headers["x-api-key"].Should().Be("1234supersecure");
         }
     }
 }

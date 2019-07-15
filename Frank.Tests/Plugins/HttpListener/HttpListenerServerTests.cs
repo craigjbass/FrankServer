@@ -1,9 +1,7 @@
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading.Tasks;
+using System;
+using System.Net;
 using FluentAssertions;
 using Frank.API.WebDevelopers.DTO;
-using Frank.ExtensionPoints;
 using Frank.Plugins.HttpListener;
 using NUnit.Framework;
 using RestSharp;
@@ -14,117 +12,131 @@ namespace Frank.Tests.Plugins.HttpListener
     [SingleThreaded]
     public class HttpListenerServerTests
     {
-        private HttpListenerServer _listener;
         private IRestResponse _response;
-        private ConcurrentBag<Request> _requests;
+        private IHttpServerWrapper _server;
+        private IVerifyingRequestHandler _requestHandler;
 
+        [SetUp]
+        public void SetUp()
+        {
+            var httpListenerServerWrapper = new HttpListenerServerWrapper(new HttpListenerServer());
+            _requestHandler = httpListenerServerWrapper;
+            _server = httpListenerServerWrapper;
+        }
 
-        private void MakeGetRequest(string url, string path)
+        [TearDown]
+        public void TearDown() => _server.Stop();
+
+        private void MakeGetRequest(string url, string path, Action<RestRequest> requestBuilder = null)
         {
             var request = new RestRequest(path, Method.GET);
+
+            (requestBuilder ?? (r => { }))(request);
+
             request.Timeout = 100;
             var client = new RestClient(url);
             _response = client.Execute(request);
         }
 
-        private void AssertTimedOut()
+        private static void MakeAMinimalGetRequest(string url)
         {
-            _response.ResponseStatus.Should().Be(ResponseStatus.TimedOut);
+            var request = WebRequest.Create(url);
+            request.Method = "GET";
+            request.GetResponse();
         }
 
-        private void AssertStatusCodeIs(int expected)
-        {
-            _response.StatusCode.Should().Be(expected);
-        }
+        private void AssertStatusCodeIs(int expected) => _response.StatusCode.Should().Be(expected);
 
-        private void SetupHttpListenerToAlwaysResponseWith(Response response)
-        {
-            Task.Run(() =>
-            {
-                _listener.RegisterRequestHandler((request, buffer) =>
-                {
-                    _requests.Add(request);
-                    buffer.SetContentsOfBufferTo(response);
-                    buffer.Flush();
-                });
-            });
-        }
+        private void AssertTimedOut() => _response.ResponseStatus.Should().Be(ResponseStatus.TimedOut);
 
-        [SetUp]
-        public void SetUp()
-        {
-            _requests = new ConcurrentBag<Request>();
-            _listener = new HttpListenerServer();
-        }
+        private void AssertStatusIsOk() => AssertStatusCodeIs(200);
 
-        [TearDown]
-        public void TearDown()
-        {
-            _listener.Stop();
-        }
+        private void AssertContentIs(string expectedContent) => _response.Content.Should().Be(expectedContent);
 
         [Test]
         public void RespondsWith404OnAnyUnregisteredHostname()
         {
-            _listener.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8021}});
-            MakeGetRequest("http://localhost:8021/", "/");
+            _server.Start();
+            MakeGetRequest("http://localhost:8020/", "/");
             AssertStatusCodeIs(404);
         }
 
         [Test]
         public void TimesOutWhenNoRequestProcessorRegistered()
         {
-            _listener.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8020}});
-            MakeGetRequest("http://127.0.0.1:8020/", "/");
+            _server.Start();
+            MakeGetRequest(_server.Host, "/");
             AssertTimedOut();
         }
 
         [Test]
         public void CanServeRequestFromRequestProcessor()
         {
-            _listener.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8020}});
-            SetupHttpListenerToAlwaysResponseWith(Ok().BodyFromString("Hello world"));
+            _server.Start();
+            _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            MakeGetRequest("http://127.0.0.1:8020/", "/");
+            MakeGetRequest(_server.Host, "/");
 
-            _response.Content.Should().Be("Hello world");
-            _response.StatusCode.Should().Be(200);
+            AssertContentIs("Hello world");
+            AssertStatusIsOk();
+        }
+
+
+        [Test]
+        public void CanDeserialiseEmptyHttpRequest()
+        {
+            _server.Start();
+            _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
+
+            MakeAMinimalGetRequest(_server.Host);
+
+            _requestHandler.AssertPathIs("/");
+            _requestHandler.AssertThatThereAreNoQueryParameters();
+            _requestHandler.AssertThatTheRequestBodyIsEmpty();
+            _requestHandler.AssertHeaderCountIs(2);
+            _requestHandler.AssertHeadersCaseInsensitivelyContain("Connection", "Keep-Alive");
+            _requestHandler.AssertHeadersCaseInsensitivelyContain("Host", "127.0.0.1:8020");
         }
 
         [Test]
-        public void CanConstructRequest()
+        public void CanDeserialiseHttpRequest()
         {
-            _listener.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8020}});
-            SetupHttpListenerToAlwaysResponseWith(Ok().BodyFromString("Hello world"));
+            _server.Start();
+            _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            var request = new RestRequest("/asd", Method.GET);
+            MakeGetRequest(
+                _server.Host,
+                "/asd",
+                r =>
+                {
+                    r.AddParameter("z", "123");
+                    r.AddHeader("Content-Type", "application/json");
+                }
+            );
 
-            request.AddParameter("z", "123");
-            request.Timeout = 100;
-            var client = new RestClient("http://127.0.0.1:8020/");
-            _response = client.Execute(request);
+            _requestHandler.AssertPathIs("/asd");
 
-            _requests.First().Path.Should().Be("/asd");
-            _requests.First().QueryParameters["z"].Should().Be("123");
-            _requests.First().Body.Should().Be("");
+            _requestHandler.AssertQueryParametersContain("z", "123");
+            _requestHandler.AssertThatTheRequestBodyIsEmpty();
+            _requestHandler.AssertHeadersCaseInsensitivelyContain("Content-Type", "application/json");
         }
-        
+
+
         [Test]
-        public void CanConstructRequest2()
+        public void CanDeserialiseHttpRequest2()
         {
-            _listener.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8020}});
-            SetupHttpListenerToAlwaysResponseWith(Ok().BodyFromString("Hello world"));
+            _server.Start();
+            _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            var request = new RestRequest("/asd", Method.GET);
+            MakeGetRequest(
+                _server.Host,
+                "/asd",
+                r => { r.AddParameter("j", "nice"); }
+            );
 
-            request.AddParameter("j", "nice");
-            request.Timeout = 100;
-            var client = new RestClient("http://127.0.0.1:8020/");
-            _response = client.Execute(request);
-
-            _requests.First().Path.Should().Be("/asd");
-            _requests.First().QueryParameters["j"].Should().Be("nice");
-            _requests.First().Body.Should().Be("");
+            _requestHandler.AssertPathIs("/asd");
+            _requestHandler.AssertQueryParametersContain("j", "nice");
+            _requestHandler.AssertThatTheRequestBodyIsEmpty();
         }
     }
 }

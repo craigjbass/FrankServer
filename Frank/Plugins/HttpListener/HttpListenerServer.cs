@@ -65,10 +65,19 @@ namespace Frank.Plugins.HttpListener
                     {
                         Path = Path(request),
                         Body = "",
-                        QueryParameters = QueryParameters(request)
+                        QueryParameters = QueryParameters(request),
+                        Headers = Headers(request)
                     }, new ResponseBuffer(response));
                 }, _httpListener);
             } while (_running && context.AsyncWaitHandle.WaitOne());
+        }
+
+        private static Dictionary<string, string> Headers(HttpListenerRequest request)
+        {
+            return new Dictionary<string, string>(
+                request.Headers.AllKeys.ToDictionary(k => k, k => request.Headers[k]),
+                StringComparer.OrdinalIgnoreCase
+            );
         }
 
         private static string Path(HttpListenerRequest request)
