@@ -7,5 +7,6 @@ namespace Frank.API.WebDevelopers
     {
         void Get(string path, Func<Response> func);
         void Get(string path, Func<Request, Response> func);
+        void Post(string path, Func<Request, Response> func);
     }
 }

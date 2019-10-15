@@ -11,5 +11,6 @@ namespace Frank.Tests.Plugins.HttpListener
         void AssertPathIs(string expectedPath);
         void AssertQueryParametersContain(string expectedKey, string expectedValue);
         void SetupRequestHandlerToRespondWith(Response response);
+        void AssertThatTheRequestBodyIs(string expectedBody);
     }
 }

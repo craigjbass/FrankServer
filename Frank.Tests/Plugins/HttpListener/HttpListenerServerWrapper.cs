@@ -56,6 +56,11 @@ namespace Frank.Tests.Plugins.HttpListener
         public void AssertQueryParametersContain(string expectedKey, string expectedValue) =>
             _requests.First().QueryParameters[expectedKey].Should().Be(expectedValue);
 
+        public void AssertThatTheRequestBodyIs(string expectedBody)
+        {
+            _requests.First().Body.Should().Be(expectedBody);
+        }
+
         public void SetupRequestHandlerToRespondWith(Response response)
         {
             Task.Run(() =>

@@ -107,10 +107,10 @@ namespace Frank.EndToEndTests
         }
 
         [Test]
-        public void CanServeANoContentStatusCode()
+        public void CanServeACreatedStatusCode()
         {
-            StartFrankWithRoutes(router => { router.Get("/no-content", Created); });
-            MakeGetRequest("/no-content");
+            StartFrankWithRoutes(router => { router.Get("/created", Created); });
+            MakeGetRequest("/created");
             TheResponse().StatusCode.Should().Be(201);
         }
 
@@ -135,7 +135,7 @@ namespace Frank.EndToEndTests
         }
 
         [Test]
-        public void CanDeserializeIncomingRequest()
+        public void CanDeserializeIncomingGetRequest()
         {
             Request? processedRequest = null;
             StartFrankWithRoutes(
@@ -161,6 +161,37 @@ namespace Frank.EndToEndTests
             processedRequest?.Path.Should().Be("/foo/2");
             processedRequest?.QueryParameters["bar"].Should().Be("123");
             processedRequest?.Body.Should().Be("");
+            processedRequest?.Headers["x-api-key"].Should().Be("1234supersecure");
+        }
+        
+        [Test]
+        public void CanDeserializeIncomingPostRequest()
+        {
+            Request? processedRequest = null;
+            StartFrankWithRoutes(
+                router =>
+                {
+                    router.Post(
+                        "/foo/2",
+                        request =>
+                        {
+                            processedRequest = request;
+                            return Ok();
+                        });
+                }
+            );
+
+            new RestClient("http://127.0.0.1:8019/").Execute(
+                new RestRequest("/foo/2", Method.POST)
+                    .AddQueryParameter("bar", "123")
+                    .AddHeader("X-Api-Key", "1234supersecure")
+                    .AddJsonBody("This is the body!!")
+            );
+
+            processedRequest.Should().NotBeNull();
+            processedRequest?.Path.Should().Be("/foo/2");
+            processedRequest?.QueryParameters["bar"].Should().Be("123");
+            processedRequest?.Body.Should().Be("\"This is the body!!\"");
             processedRequest?.Headers["x-api-key"].Should().Be("1234supersecure");
         }
     }

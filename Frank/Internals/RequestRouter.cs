@@ -29,6 +29,11 @@ namespace Frank.Internals
             _routes.Add(path, func);
         }
 
+        public void Post(string path, Func<Request, Response> func)
+        {
+            _routes.Add(path, func);
+        }
+
         public bool CanRoute(string url)
         {
             return _routes.ContainsKey(url);

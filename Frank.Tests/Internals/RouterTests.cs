@@ -65,6 +65,14 @@ namespace Frank.Tests.Internals
         }
 
         [Test]
+        public void CanRouteAPostRequest()
+        {
+            var response = CreateRandomResponse();
+            _requestRouter.Post("/any", _ => response);
+            _requestRouter.Route(new Request {Path = "/any", Method = "POST", Body = "yo"}).Should().Be(response);
+        }
+
+        [Test]
         public void CanPassRequestToRoute()
         {
             Request? myRequest = null;

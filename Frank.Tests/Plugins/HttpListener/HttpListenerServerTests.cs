@@ -27,9 +27,9 @@ namespace Frank.Tests.Plugins.HttpListener
         [TearDown]
         public void TearDown() => _server.Stop();
 
-        private void MakeGetRequest(string url, string path, Action<RestRequest> requestBuilder = null)
+        private void MakeGetRequest(string url, string path, Method method, Action<RestRequest> requestBuilder = null)
         {
-            var request = new RestRequest(path, Method.GET);
+            var request = new RestRequest(path, method);
 
             (requestBuilder ?? (r => { }))(request);
 
@@ -57,7 +57,7 @@ namespace Frank.Tests.Plugins.HttpListener
         public void RespondsWith404OnAnyUnregisteredHostname()
         {
             _server.Start();
-            MakeGetRequest("http://localhost:8020/", "/");
+            MakeGetRequest("http://localhost:8020/", "/", Method.GET);
             AssertStatusCodeIs(404);
         }
 
@@ -65,7 +65,7 @@ namespace Frank.Tests.Plugins.HttpListener
         public void TimesOutWhenNoRequestProcessorRegistered()
         {
             _server.Start();
-            MakeGetRequest(_server.Host, "/");
+            MakeGetRequest(_server.Host, "/", Method.GET);
             AssertTimedOut();
         }
 
@@ -75,7 +75,7 @@ namespace Frank.Tests.Plugins.HttpListener
             _server.Start();
             _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            MakeGetRequest(_server.Host, "/");
+            MakeGetRequest(_server.Host, "/", Method.GET);
 
             AssertContentIs("Hello world");
             AssertStatusIsOk();
@@ -106,18 +106,19 @@ namespace Frank.Tests.Plugins.HttpListener
 
             MakeGetRequest(
                 _server.Host,
-                "/asd",
+                "/asd", Method.POST,
                 r =>
                 {
-                    r.AddParameter("z", "123");
+                    r.AddQueryParameter("z", "123");
                     r.AddHeader("Content-Type", "application/json");
+                    r.AddJsonBody(new { });
                 }
             );
 
             _requestHandler.AssertPathIs("/asd");
 
             _requestHandler.AssertQueryParametersContain("z", "123");
-            _requestHandler.AssertThatTheRequestBodyIsEmpty();
+            _requestHandler.AssertThatTheRequestBodyIs("{}");
             _requestHandler.AssertHeadersCaseInsensitivelyContain("Content-Type", "application/json");
         }
 
@@ -130,7 +131,7 @@ namespace Frank.Tests.Plugins.HttpListener
 
             MakeGetRequest(
                 _server.Host,
-                "/asd",
+                "/asd", Method.GET,
                 r => { r.AddParameter("j", "nice"); }
             );
 
