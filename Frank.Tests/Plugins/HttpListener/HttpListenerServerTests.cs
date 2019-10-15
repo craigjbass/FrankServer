@@ -27,7 +27,7 @@ namespace Frank.Tests.Plugins.HttpListener
         [TearDown]
         public void TearDown() => _server.Stop();
 
-        private void MakeGetRequest(string url, string path, Method method, Action<RestRequest> requestBuilder = null)
+        private void MakeRequest(string url, string path, Method method, Action<RestRequest> requestBuilder = null)
         {
             var request = new RestRequest(path, method);
 
@@ -57,7 +57,7 @@ namespace Frank.Tests.Plugins.HttpListener
         public void RespondsWith404OnAnyUnregisteredHostname()
         {
             _server.Start();
-            MakeGetRequest("http://localhost:8020/", "/", Method.GET);
+            MakeRequest("http://localhost:8020/", "/", Method.GET);
             AssertStatusCodeIs(404);
         }
 
@@ -65,7 +65,7 @@ namespace Frank.Tests.Plugins.HttpListener
         public void TimesOutWhenNoRequestProcessorRegistered()
         {
             _server.Start();
-            MakeGetRequest(_server.Host, "/", Method.GET);
+            MakeRequest(_server.Host, "/", Method.GET);
             AssertTimedOut();
         }
 
@@ -75,7 +75,7 @@ namespace Frank.Tests.Plugins.HttpListener
             _server.Start();
             _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            MakeGetRequest(_server.Host, "/", Method.GET);
+            MakeRequest(_server.Host, "/", Method.GET);
 
             AssertContentIs("Hello world");
             AssertStatusIsOk();
@@ -104,7 +104,7 @@ namespace Frank.Tests.Plugins.HttpListener
             _server.Start();
             _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            MakeGetRequest(
+            MakeRequest(
                 _server.Host,
                 "/asd", Method.POST,
                 r =>
@@ -129,7 +129,7 @@ namespace Frank.Tests.Plugins.HttpListener
             _server.Start();
             _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            MakeGetRequest(
+            MakeRequest(
                 _server.Host,
                 "/asd", Method.GET,
                 r => { r.AddParameter("j", "nice"); }

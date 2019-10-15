@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Frank.API.WebDevelopers.DTO;
@@ -23,19 +24,25 @@ namespace Frank.Tests.Plugins.HttpListener
 
         public void AssertHeadersCaseInsensitivelyContain(string expectedKey, string expectedValue)
         {
-            _requests.First().Headers.Should()
+            FirstRequest().Headers.Should()
                 .Contain(new KeyValuePair<string, string>(
                     expectedKey.ToLower(),
                     expectedValue));
-            _requests.First().Headers.Should()
+            FirstRequest().Headers.Should()
                 .Contain(new KeyValuePair<string, string>(
                     expectedKey.ToUpper(),
                     expectedValue));
 
-            _requests.First().Headers.Should()
+            FirstRequest().Headers.Should()
                 .Contain(new KeyValuePair<string, string>(
                     CapitalizeFirstLetter(expectedKey.ToLower()),
                     expectedValue));
+        }
+
+        private Request FirstRequest()
+        {
+            WaitForRequest();
+            return _requests.First();
         }
 
         private static string CapitalizeFirstLetter(string expectedKey)
@@ -44,21 +51,21 @@ namespace Frank.Tests.Plugins.HttpListener
         }
 
         public void AssertHeaderCountIs(int expectedNumberOfHeaders) =>
-            _requests.First().Headers.Should().HaveCount(expectedNumberOfHeaders);
+            FirstRequest().Headers.Should().HaveCount(expectedNumberOfHeaders);
 
-        public void AssertThatTheRequestBodyIsEmpty() => _requests.First().Body.Should().Be("");
+        public void AssertThatTheRequestBodyIsEmpty() => FirstRequest().Body.Should().Be("");
 
         public void AssertThatThereAreNoQueryParameters() =>
-            _requests.First().QueryParameters.Should().BeEmpty();
+            FirstRequest().QueryParameters.Should().BeEmpty();
 
-        public void AssertPathIs(string expectedPath) => _requests.First().Path.Should().Be(expectedPath);
+        public void AssertPathIs(string expectedPath) => FirstRequest().Path.Should().Be(expectedPath);
 
         public void AssertQueryParametersContain(string expectedKey, string expectedValue) =>
-            _requests.First().QueryParameters[expectedKey].Should().Be(expectedValue);
+            FirstRequest().QueryParameters[expectedKey].Should().Be(expectedValue);
 
         public void AssertThatTheRequestBodyIs(string expectedBody)
         {
-            _requests.First().Body.Should().Be(expectedBody);
+            FirstRequest().Body.Should().Be(expectedBody);
         }
 
         public void SetupRequestHandlerToRespondWith(Response response)
@@ -80,6 +87,7 @@ namespace Frank.Tests.Plugins.HttpListener
         }
 
         public string Host => "http://127.0.0.1:8020";
+        public void WaitForRequest() => SpinWait.SpinUntil(() => !_requests.IsEmpty);
 
         public void Stop()
         {
