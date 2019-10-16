@@ -101,7 +101,7 @@ namespace Frank.EndToEndTests
         [TestCase("/okay")]
         public void CanServeOk(string route)
         {
-            StartFrankWithRoutes(router => { router.Get(route, Ok); });
+            StartFrankWithRoutes(router => { router.Get(route).To(Ok); });
             MakeGetRequest(route);
             TheResponse().StatusCode.Should().Be(200);
         }
@@ -109,7 +109,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanServeACreatedStatusCode()
         {
-            StartFrankWithRoutes(router => { router.Get("/created", Created); });
+            StartFrankWithRoutes(router => { router.Get("/created").To(Created); });
             MakeGetRequest("/created");
             TheResponse().StatusCode.Should().Be(201);
         }
@@ -120,10 +120,8 @@ namespace Frank.EndToEndTests
             StartFrankWithRoutes(
                 router =>
                 {
-                    router.Get(
-                        "/foo/2",
-                        () => Ok().WithBody(new {Id = 2})
-                    );
+                    router.Get("/foo/2")
+                        .To(() => Ok().WithBody(new {Id = 2}));
                 }
             );
 
@@ -141,13 +139,13 @@ namespace Frank.EndToEndTests
             StartFrankWithRoutes(
                 router =>
                 {
-                    router.Get(
-                        "/foo/2",
-                        request =>
-                        {
-                            processedRequest = request;
-                            return Ok();
-                        });
+                    router.Get("/foo/2")
+                        .To(request =>
+                            {
+                                processedRequest = request;
+                                return Ok();
+                            }
+                        );
                 }
             );
 
@@ -163,7 +161,7 @@ namespace Frank.EndToEndTests
             processedRequest?.Body.Should().Be("");
             processedRequest?.Headers["x-api-key"].Should().Be("1234supersecure");
         }
-        
+
         [Test]
         public void CanDeserializeIncomingPostRequest()
         {
@@ -171,13 +169,13 @@ namespace Frank.EndToEndTests
             StartFrankWithRoutes(
                 router =>
                 {
-                    router.Post(
-                        "/foo/2",
-                        request =>
-                        {
-                            processedRequest = request;
-                            return Ok();
-                        });
+                    router.Post("/foo/2")
+                        .To(request =>
+                            {
+                                processedRequest = request;
+                                return Ok();
+                            }
+                        );
                 }
             );
 

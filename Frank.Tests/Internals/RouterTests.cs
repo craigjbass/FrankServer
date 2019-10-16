@@ -50,7 +50,7 @@ namespace Frank.Tests.Internals
             string expectedRoute, bool expectedRoutability
         )
         {
-            _requestRouter.Get(route, () => new Response());
+            _requestRouter.Get(route).To(() => new Response());
             _requestRouter.CanRoute(expectedRoute).Should().Be(expectedRoutability);
         }
 
@@ -60,7 +60,7 @@ namespace Frank.Tests.Internals
         public void CanGetResponseForRoute(string route)
         {
             var response = CreateRandomResponse();
-            _requestRouter.Get(route, () => response);
+            _requestRouter.Get(route).To(() => response);
             _requestRouter.Route(new Request {Path = route}).Should().Be(response);
         }
 
@@ -68,7 +68,7 @@ namespace Frank.Tests.Internals
         public void CanRouteAPostRequest()
         {
             var response = CreateRandomResponse();
-            _requestRouter.Post("/any", _ => response);
+            _requestRouter.Post("/any").To( _ => response);
             _requestRouter.Route(new Request {Path = "/any", Method = "POST", Body = "yo"}).Should().Be(response);
         }
 
@@ -76,7 +76,7 @@ namespace Frank.Tests.Internals
         public void CanPassRequestToRoute()
         {
             Request? myRequest = null;
-            _requestRouter.Get("/hello", request =>
+            _requestRouter.Get("/hello").To(request =>
             {
                 myRequest = request;
                 return CreateRandomResponse();

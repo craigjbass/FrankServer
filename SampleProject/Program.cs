@@ -14,10 +14,9 @@ namespace SampleProject
                 .WithRoutes(
                     router =>
                     {
-                        router.Get("/test", () => Ok().WithBody(new {Success = true}));
-                        router.Get(
-                            "/hello",
-                            request =>
+                        router.Get("/test").To(() => Ok().WithBody(new {Success = true}));
+                        router.Get("/hello")
+                            .To(request =>
                             {
                                 var isHello = request.QueryParameters.ContainsKey("what") &&
                                               request.QueryParameters["what"] == "hello";

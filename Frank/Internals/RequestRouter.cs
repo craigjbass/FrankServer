@@ -10,46 +10,54 @@ namespace Frank.Internals
     {
     }
 
-    internal class RequestRouter : IRouteConfigurer, WebApplication.IRequestRouter
+    internal class RequestRouter :
+        IRouteConfigurer,
+        IRouteToConfigurer,
+        WebApplication.IRequestRouter
     {
         private readonly Dictionary<string, Func<Request, Response>> _routes;
+        private string _path;
 
         public RequestRouter()
         {
             _routes = new Dictionary<string, Func<Request, Response>>();
         }
 
-        public void Get(string path, Func<Response> func)
+        public IRouteToConfigurer Get(string path)
         {
-            _routes.Add(path, _ => func());
+            _path = path;
+            return this;
         }
 
-        public void Get(string path, Func<Request, Response> func)
+        public IRouteToConfigurer Post(string path)
         {
-            _routes.Add(path, func);
+            _path = path;
+            return this;
         }
 
-        public void Post(string path, Func<Request, Response> func)
+        public IRouteConfigurer To(Func<Response> func)
         {
-            _routes.Add(path, func);
+            _routes.Add(_path, _ => func());
+            return this;
         }
 
-        public bool CanRoute(string url)
+        public IRouteConfigurer To(Func<Request, Response> func)
         {
-            return _routes.ContainsKey(url);
+            _routes.Add(_path, func);
+            return this;
         }
+
+        public bool CanRoute(string url) => _routes.ContainsKey(url);
 
         public Response Route(Request request)
         {
             if (IsUnroutable(request))
                 throw new Unroutable();
-            
+
             return _routes[request.Path](request);
         }
 
-        private bool IsUnroutable(Request request)
-        {
-            return request.Path == null || !CanRoute(request.Path);
-        }
+        private bool IsUnroutable(Request request) => 
+            request.Path == null || !CanRoute(request.Path);
     }
 }

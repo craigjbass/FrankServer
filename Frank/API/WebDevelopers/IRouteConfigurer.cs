@@ -5,8 +5,13 @@ namespace Frank.API.WebDevelopers
 {
     public interface IRouteConfigurer
     {
-        void Get(string path, Func<Response> func);
-        void Get(string path, Func<Request, Response> func);
-        void Post(string path, Func<Request, Response> func);
+        IRouteToConfigurer Get(string path);
+        IRouteToConfigurer Post(string path);
+    }
+
+    public interface IRouteToConfigurer
+    {
+        IRouteConfigurer To(Func<Response> func);
+        IRouteConfigurer To(Func<Request, Response> func);
     }
 }
