@@ -2,6 +2,10 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
+        <PackageId>FrankServer</PackageId>
+        <PackageVersion>0.1.0</PackageVersion>
+        <Authors>craig@madetech.com</Authors>
+        <RepositoryUrl>https://github.com/craigjbass/Frank</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>

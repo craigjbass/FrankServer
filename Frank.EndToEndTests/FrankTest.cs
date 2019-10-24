@@ -74,8 +74,7 @@ namespace Frank.EndToEndTests
         {
             _webApplication.Stop();
         }
-
-
+        
         [Test]
         public void CanServeNotFound()
         {

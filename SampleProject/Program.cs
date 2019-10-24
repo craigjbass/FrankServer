@@ -14,22 +14,26 @@ namespace SampleProject
                 .WithRoutes(
                     router =>
                     {
-                        router.Get("/test").To(() => Ok().WithBody(new {Success = true}));
-                        router.Get("/hello")
-                            .To(request =>
-                            {
-                                var isHello = request.QueryParameters.ContainsKey("what") &&
-                                              request.QueryParameters["what"] == "hello";
-
-                                return Ok().WithBody(isHello ? new {message = "Yes?"} : new {message = "Rude."});
-                            });
+                        router.Get("/test").To(Test);
+                        router.Get("/hello").To(Hello);
                     }
                 )
                 .Build()
                 .Start();
-
-
+            
             SpinWait.SpinUntil(() => false);
+        }
+
+        private static Response Test()
+        {
+            return Ok().WithBody(new {Success = true});
+        }
+
+        private static Response Hello(Request request)
+        {
+            var isHello = request.QueryParameters.ContainsKey("what") && request.QueryParameters["what"] == "hello";
+
+            return Ok().WithBody(isHello ? new {message = "Yes?"} : new {message = "Rude."});
         }
     }
 }
