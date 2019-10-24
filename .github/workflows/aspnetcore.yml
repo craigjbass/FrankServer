@@ -3,17 +3,28 @@ name: ASP.NET Core CI
 on: [push, pull_request]
 
 jobs:
-  build:
-
+  build-and-test:
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v1
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 2.2.108
+        dotnet-version: 3.0.100
     - name: Build with dotnet
       run: dotnet build --configuration Release
     - name: Test
       run: dotnet test
+  release:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.0.100
+    - name: Pack
+      run: dotnet pack
+    - name: Publish
+      run: dotnet nuget push ./Frank/bin/Debug/FrankServer.0.1.0.nupkg -k${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json
