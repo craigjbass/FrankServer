@@ -1,4 +1,5 @@
 using System;
+using Frank.Internals;
 
 namespace Frank.API.WebDevelopers
 {
@@ -7,5 +8,6 @@ namespace Frank.API.WebDevelopers
         IWebApplicationBuilder WithRoutes(Action<IRouteConfigurer> action);
         IWebApplicationBuilder ListenOn(string ip, string port);
         IWebApplication Build();
+        ITestWebApplicationBuilder ForTesting();
     }
 }

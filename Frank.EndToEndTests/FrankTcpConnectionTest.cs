@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Net;
 using System.Text;
 using FluentAssertions;
@@ -14,7 +12,7 @@ using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
 
 namespace Frank.EndToEndTests
 {
-    public class FrankTest
+    public class FrankTcpConnectionTest
     {
         private IWebApplicationBuilder _builder;
         private IWebApplication _webApplication;
