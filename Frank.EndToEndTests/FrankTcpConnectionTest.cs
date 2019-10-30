@@ -49,7 +49,7 @@ namespace Frank.EndToEndTests
         public void SetUp()
         {
             _port = 8019;
-            _builder = System.Frank.Configure();
+            _builder = Server.Configure();
         }
 
         [TearDown]

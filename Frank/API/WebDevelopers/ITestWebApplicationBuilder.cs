@@ -1,6 +1,4 @@
-using Frank.API.WebDevelopers;
-
-namespace Frank.Internals
+namespace Frank.API.WebDevelopers
 {
     public interface ITestWebApplicationBuilder
     {

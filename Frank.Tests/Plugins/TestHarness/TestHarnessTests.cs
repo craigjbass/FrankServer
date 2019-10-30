@@ -2,10 +2,10 @@ using FluentAssertions;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
-using Frank.Internals;
+using Frank.Plugins.TestHarness;
 using NUnit.Framework;
 
-namespace Frank.Tests.Internals
+namespace Frank.Tests.Plugins.TestHarness
 {
     public class TestHarnessTests : IWebApplication
     {
@@ -37,7 +37,7 @@ namespace Frank.Tests.Internals
         [Test]
         public void CanProxyStartAndStop()
         {
-            var testHarness = new TestHarness(this, new TestHarnessServer());
+            var testHarness = new Adapter(this, new TestHarnessServer());
             testHarness.Start();
             testHarness.Stop();
 
@@ -50,7 +50,7 @@ namespace Frank.Tests.Internals
         {
             var testHarnessServer = new TestHarnessServer();
             testHarnessServer.RegisterRequestHandler(ProcessRequest);
-            var testHarness = new TestHarness(this, testHarnessServer);
+            var testHarness = new Adapter(this, testHarnessServer);
 
             var response = testHarness.Execute(new Request
             {
@@ -67,7 +67,7 @@ namespace Frank.Tests.Internals
         {
             var testHarnessServer = new TestHarnessServer();
             testHarnessServer.RegisterRequestHandler(ProcessRequest);
-            var testHarness = new TestHarness(this, testHarnessServer);
+            var testHarness = new Adapter(this, testHarnessServer);
 
             _nextResponse = new Response()
             {

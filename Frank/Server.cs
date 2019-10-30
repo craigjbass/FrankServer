@@ -4,9 +4,9 @@ using Frank.Internals;
 
 [assembly: InternalsVisibleTo("Frank.Tests")]
 // ReSharper disable once CheckNamespace
-namespace System
+namespace Frank
 {
-    public static class Frank
+    public static class Server
     {
         public static IWebApplicationBuilder Configure()
         {

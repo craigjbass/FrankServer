@@ -8,7 +8,7 @@ namespace SampleProject
     {
         static void Main()
         {
-            System.Frank
+            Frank.Server
                 .Configure()
                 .ListenOn(8000)
                 .WithRoutes(

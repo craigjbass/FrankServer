@@ -1,17 +1,15 @@
-using System;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
-using Frank.ExtensionPoints;
 
-namespace Frank.Internals
+namespace Frank.Plugins.TestHarness
 {
-    internal class TestHarness : ITestWebApplication
+    internal class Adapter : ITestWebApplication
     {
         private readonly IWebApplication _application;
         private readonly TestHarnessServer _testHarness;
 
-        public TestHarness(IWebApplication application, TestHarnessServer testHarness)
+        public Adapter(IWebApplication application, TestHarnessServer testHarness)
         {
             _application = application;
             _testHarness = testHarness;
@@ -41,34 +39,6 @@ namespace Frank.Internals
         public Response GetContents()
         {
             return _response;
-        }
-    }
-
-    internal class TestHarnessServer : IServer
-    {
-        private Action<Request, IResponseBuffer> _processRequest;
-
-        public void RegisterRequestHandler(Action<Request, IResponseBuffer> processRequest)
-        {
-            _processRequest = processRequest;
-        }
-
-        public Response Execute(Request request)
-        {
-            request.Path = "/";
-            var buffer = new TestResponseBuffer();
-            _processRequest(request, buffer);
-            return buffer.GetContents();
-        }
-
-        public void Start()
-        {
-            
-        }
-
-        public void Stop()
-        {
-            
         }
     }
 }

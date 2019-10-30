@@ -11,7 +11,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanMakeTestRequestAndRespondWith404()
         {
-            ITestWebApplication webApplication = System.Frank.Configure().ForTesting().Build();
+            ITestWebApplication webApplication = Server.Configure().ForTesting().Build();
 
             webApplication.Start();
 
@@ -23,7 +23,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanRouteToARoute()
         {
-            ITestWebApplication webApplication = System.Frank
+            ITestWebApplication webApplication = Server
                 .Configure()
                 .WithRoutes(
                     c => c.Get("/").To(request => ResponseBuilders.Ok().WithBody(new { a = 123 }))
@@ -43,7 +43,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanDoThing()
         {
-            ITestWebApplication webApplication = System.Frank
+            ITestWebApplication webApplication = Server
                 .Configure()
                 .WithRoutes(
                     c => c.Get("/").To(request => ResponseBuilders.Ok().WithBody(new { a = 123 }))

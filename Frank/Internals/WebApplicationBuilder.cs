@@ -2,6 +2,7 @@
 using Frank.API.WebDevelopers;
 using Frank.ExtensionPoints;
 using Frank.Plugins.HttpListener;
+using Frank.Plugins.TestHarness;
 
 namespace Frank.Internals
 {
@@ -24,16 +25,16 @@ namespace Frank.Internals
             return this;
         }
 
+        public ITestWebApplicationBuilder ForTesting()
+        {
+            return new TestApplicationBuilder(this);
+        }
+
         public IWebApplication Build()
         {
             return new WebApplication(_server ?? new HttpListenerServer(_port),
                 _requestRouterConfigurer ?? new RequestRouter()
             );
-        }
-
-        public ITestWebApplicationBuilder ForTesting()
-        {
-            return new TestApplicationBuilder(this);
         }
 
         private class TestApplicationBuilder : ITestWebApplicationBuilder
@@ -49,7 +50,7 @@ namespace Frank.Internals
             {
                 var testHarnessServer = new TestHarnessServer();
                 _webApplicationBuilder._server = testHarnessServer;
-                return new TestHarness(_webApplicationBuilder.Build(), testHarnessServer);
+                return new Adapter(_webApplicationBuilder.Build(), testHarnessServer);
             }
         }
     }
