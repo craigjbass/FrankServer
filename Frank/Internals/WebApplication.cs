@@ -35,7 +35,7 @@ namespace Frank.Internals
         public void Start()
         {
             _server.Start(_port);
-            new Task(() => _server.RegisterRequestHandler(ProcessRequest)).Start();
+            _server.RegisterRequestHandler(ProcessRequest);
         }
 
         private void ProcessRequest(Request request, IResponseBuffer responseBuffer)

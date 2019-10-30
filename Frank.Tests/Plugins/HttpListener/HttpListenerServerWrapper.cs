@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using Frank.API.WebDevelopers.DTO;
-using Frank.ExtensionPoints;
 using Frank.Plugins.HttpListener;
 
 namespace Frank.Tests.Plugins.HttpListener

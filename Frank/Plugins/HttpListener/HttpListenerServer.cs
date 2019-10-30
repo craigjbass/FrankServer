@@ -26,22 +26,26 @@ namespace Frank.Plugins.HttpListener
 
         public void RegisterRequestHandler(Action<Request, IResponseBuffer> processRequest)
         {
-            IAsyncResult context;
-            do
-            {
-                context = _httpListener.BeginGetContext(ar =>
-                {
-                    HttpListenerContext c = ((System.Net.HttpListener) ar.AsyncState).EndGetContext(ar);
-                    Console.WriteLine($"REQUEST {c.Request.Url}");
-
-                    processRequest(
-                        new RequestConverter(c.Request).Convert(),
-                        new ResponseBuffer(c.Response)
-                    );
-                }, _httpListener);
-            } while (_running && context.AsyncWaitHandle.WaitOne());
+            
+            _httpListener.BeginGetContext(Callback(processRequest), _httpListener);
         }
-        
+
+        private AsyncCallback Callback(Action<Request, IResponseBuffer> processRequest)
+        {
+            return ar =>
+            {
+                HttpListenerContext c = ((System.Net.HttpListener) ar.AsyncState).EndGetContext(ar);
+                Console.WriteLine($"REQUEST {c.Request.Url}");
+
+                processRequest(
+                    new RequestConverter(c.Request).Convert(),
+                    new ResponseBuffer(c.Response)
+                );
+
+                _httpListener.BeginGetContext(Callback(processRequest), _httpListener);
+            };
+        }
+
         public void Stop()
         {
             _running = false;
