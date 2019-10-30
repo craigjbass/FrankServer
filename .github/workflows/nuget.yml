@@ -1,0 +1,19 @@
+name: Release to NuGet
+on: 
+  release:
+    types: [published]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.2.108
+    - name: Test
+      run: dotnet test
+    - name: Pack
+      run: dotnet pack
+    - name: Publish
+      run: dotnet nuget push ./Frank/bin/Debug/FrankServer.0.1.0.nupkg -k ${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json
