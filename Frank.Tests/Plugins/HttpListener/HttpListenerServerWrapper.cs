@@ -2,10 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using Frank.API.WebDevelopers.DTO;
 using Frank.Plugins.HttpListener;
 
@@ -39,11 +37,7 @@ namespace Frank.Tests.Plugins.HttpListener
                     expectedValue));
         }
 
-        private Request FirstRequest()
-        {
-            WaitForRequest();
-            return _requests.First();
-        }
+        private Request FirstRequest() => _requests.First();
 
         private static string CapitalizeFirstLetter(string expectedKey)
         {
@@ -87,7 +81,6 @@ namespace Frank.Tests.Plugins.HttpListener
         }
 
         public string Host => "http://127.0.0.1:8020";
-        public void WaitForRequest() => SpinWait.SpinUntil(() => !_requests.IsEmpty, (int) 30.Seconds().TotalMilliseconds);
 
         public void Stop()
         {

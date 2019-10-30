@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;

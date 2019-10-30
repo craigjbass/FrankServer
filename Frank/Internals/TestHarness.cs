@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
@@ -56,7 +55,6 @@ namespace Frank.Internals
 
         public Response Execute(Request request)
         {
-            SpinWait.SpinUntil(() => _processRequest != null);
             request.Path = "/";
             var buffer = new TestResponseBuffer();
             _processRequest(request, buffer);
