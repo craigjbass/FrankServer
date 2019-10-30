@@ -11,11 +11,6 @@ namespace Frank.Internals
         private IServer _server;
         private int _port;
 
-        public WebApplicationBuilder()
-        {
-            _server = new HttpListenerServer();
-        }
-
         public IWebApplicationBuilder WithRoutes(Action<IRouteConfigurer> action)
         {
             _requestRouterConfigurer = new RequestRouter();
@@ -31,7 +26,9 @@ namespace Frank.Internals
 
         public IWebApplication Build()
         {
-            return new WebApplication(_port, _server, _requestRouterConfigurer ?? new RequestRouter());
+            return new WebApplication(_server ?? new HttpListenerServer(_port),
+                _requestRouterConfigurer ?? new RequestRouter()
+            );
         }
 
         public ITestWebApplicationBuilder ForTesting()
@@ -39,7 +36,7 @@ namespace Frank.Internals
             return new TestApplicationBuilder(this);
         }
 
-        private class TestApplicationBuilder : ITestWebApplicationBuilder 
+        private class TestApplicationBuilder : ITestWebApplicationBuilder
         {
             private readonly WebApplicationBuilder _webApplicationBuilder;
 

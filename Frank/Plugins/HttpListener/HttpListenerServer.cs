@@ -13,13 +13,19 @@ namespace Frank.Plugins.HttpListener
     {
         private System.Net.HttpListener _httpListener;
         private bool _running;
+        private int _port;
 
-        public void Start(int port)
+        public HttpListenerServer(int port)
+        {
+            _port = port;
+        }
+
+        public void Start()
         {
             _running = true;
             _httpListener = new System.Net.HttpListener();
 
-            _httpListener.Prefixes.Add($"http://+:{port}/");
+            _httpListener.Prefixes.Add($"http://+:{_port}/");
 
             _httpListener.Start();
         }

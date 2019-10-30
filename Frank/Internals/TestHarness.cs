@@ -61,7 +61,7 @@ namespace Frank.Internals
             return buffer.GetContents();
         }
 
-        public void Start(int port)
+        public void Start()
         {
             
         }

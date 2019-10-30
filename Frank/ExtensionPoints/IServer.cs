@@ -6,7 +6,7 @@ namespace Frank.ExtensionPoints
 {
     public interface IServer
     {
-        void Start(int port);
+        void Start();
         void RegisterRequestHandler(Action<Request, IResponseBuffer> processRequest);
         void Stop();
     }

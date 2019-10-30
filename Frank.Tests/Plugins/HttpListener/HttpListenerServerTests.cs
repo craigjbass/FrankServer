@@ -18,14 +18,14 @@ namespace Frank.Tests.Plugins.HttpListener
 
         private void StartServer()
         {
-            _httpListenerServer.Start(8020);
+            _httpListenerServer.Start();
             _httpListenerServer.RegisterRequestHandler(_requestHandlerMock.HandleRequest);
         }
 
         [SetUp]
         public void SetUp()
         {
-            _httpListenerServer = new HttpListenerServer();
+            _httpListenerServer = new HttpListenerServer(8020);
             _requestHandlerMock = new VerifyingRequestHandlerMock();
         }
 
