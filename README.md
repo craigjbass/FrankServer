@@ -70,3 +70,6 @@ I dunno? If you are asking that, maybe you should use ASP.NET Core MVC.
 
 Yes, yes it is. it's v0.1. What do you want from me?
 
+*Why "Frank"?*
+
+You ever heard of [Sinatra](http://sinatrarb.com)?
