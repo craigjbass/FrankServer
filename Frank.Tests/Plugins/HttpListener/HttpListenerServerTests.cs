@@ -54,14 +54,6 @@ namespace Frank.Tests.Plugins.HttpListener
         private void AssertContentIs(string expectedContent) => _response.Content.Should().Be(expectedContent);
 
         [Test]
-        public void RespondsWith404OnAnyUnregisteredHostname()
-        {
-            _server.Start();
-            MakeRequest("http://localhost:8020/", "/", Method.GET);
-            AssertStatusCodeIs(404);
-        }
-
-        [Test]
         public void TimesOutWhenNoRequestProcessorRegistered()
         {
             _server.Start();

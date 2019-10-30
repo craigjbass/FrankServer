@@ -83,7 +83,7 @@ namespace Frank.Tests.Plugins.HttpListener
 
         public void Start()
         {
-            _listener.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8020}});
+            _listener.Start(8020);
         }
 
         public string Host => "http://127.0.0.1:8020";

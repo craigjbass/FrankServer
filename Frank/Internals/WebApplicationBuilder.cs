@@ -9,6 +9,7 @@ namespace Frank.Internals
     {
         private RequestRouter _requestRouterConfigurer;
         private IServer _server;
+        private int _port;
 
         public WebApplicationBuilder()
         {
@@ -22,14 +23,15 @@ namespace Frank.Internals
             return this;
         }
 
-        public IWebApplicationBuilder ListenOn(string ip, string port)
+        public IWebApplicationBuilder ListenOn(int port)
         {
+            _port = port;
             return this;
         }
 
         public IWebApplication Build()
         {
-            return new WebApplication(_server, _requestRouterConfigurer ?? new RequestRouter());
+            return new WebApplication(_port, _server, _requestRouterConfigurer ?? new RequestRouter());
         }
 
         public ITestWebApplicationBuilder ForTesting()

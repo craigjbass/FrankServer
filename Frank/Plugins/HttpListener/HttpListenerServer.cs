@@ -14,12 +14,12 @@ namespace Frank.Plugins.HttpListener
         private System.Net.HttpListener _httpListener;
         private bool _running;
 
-        public void Start(ListenOn[] listenOns)
+        public void Start(int port)
         {
             _running = true;
             _httpListener = new System.Net.HttpListener();
-            foreach (var listenOn in listenOns)
-                _httpListener.Prefixes.Add($"http://{listenOn.HostName}:{listenOn.Port}/");
+
+            _httpListener.Prefixes.Add($"http://+:{port}/");
 
             _httpListener.Start();
         }

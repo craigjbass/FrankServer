@@ -10,7 +10,7 @@ namespace SampleProject
         {
             System.Frank
                 .Configure()
-                .ListenOn("127.0.0.1", "8000")
+                .ListenOn(8000)
                 .WithRoutes(
                     router =>
                     {

@@ -11,6 +11,7 @@ namespace Frank.Internals
 {
     internal class WebApplication : IWebApplication
     {
+        private readonly int _port;
         private readonly IServer _server;
         private readonly IRequestRouter _requestRouter;
         private readonly List<Exception> _exceptions = new List<Exception>();
@@ -24,15 +25,16 @@ namespace Frank.Internals
             );
         }
 
-        public WebApplication(IServer server, IRequestRouter requestRouter)
+        public WebApplication(int port, IServer server, IRequestRouter requestRouter)
         {
+            _port = port;
             _server = server;
             _requestRouter = requestRouter;
         }
 
         public void Start()
         {
-            _server.Start(new[] {new ListenOn {HostName = "127.0.0.1", Port = 8019}});
+            _server.Start(_port);
             new Task(() => _server.RegisterRequestHandler(ProcessRequest)).Start();
         }
 

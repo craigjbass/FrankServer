@@ -12,16 +12,18 @@ using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
 
 namespace Frank.EndToEndTests
 {
+    [SingleThreaded]
     public class FrankTcpConnectionTest
     {
         private IWebApplicationBuilder _builder;
         private IWebApplication _webApplication;
         private IRestResponse _response;
+        private int _port;
 
         private void MakeGetRequest(string path)
         {
             var request = new RestRequest(path, Method.GET);
-            var client = new RestClient("http://127.0.0.1:8019/");
+            var client = new RestClient($"http://127.0.0.1:{_port}/");
 
             _response = client.Execute(request);
         }
@@ -46,8 +48,8 @@ namespace Frank.EndToEndTests
         [SetUp]
         public void SetUp()
         {
+            _port = 8019;
             _builder = System.Frank.Configure();
-            _builder.ListenOn("127.0.0.1", "8019");
         }
 
         [TearDown]
@@ -58,6 +60,7 @@ namespace Frank.EndToEndTests
 
         private void StartFrank()
         {
+            _builder.ListenOn(_port);
             _webApplication = _builder.Build();
             _webApplication.Start();
         }
@@ -65,6 +68,7 @@ namespace Frank.EndToEndTests
         private void StartFrankWithRoutes(Action<IRouteConfigurer> action)
         {
             _builder.WithRoutes(action);
+            _builder.ListenOn(_port);
             StartFrank();
         }
 
@@ -106,6 +110,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanServeACreatedStatusCode()
         {
+            _port = 8090;
             StartFrankWithRoutes(router => { router.Get("/created").To(Created); });
             MakeGetRequest("/created");
             TheResponse().StatusCode.Should().Be(201);
