@@ -12,7 +12,7 @@ FrankServer is designed to facilitate fast, high-level integration tests.
 
 Well - the current Frank EndToEndTests suite finishes in less than 200ms.
 
-Each single test spins up and tears down *the entire TCP server*, with a performance of between 10-100ms.
+Each single test spins up and tears down **the entire TCP server**, with a performance of between 10-100ms.
 
 ## Installing
 
@@ -54,22 +54,22 @@ This causes any GET request to `/test` to result in a 200 status code.
 
 ## FAQs
 
-*Why not just use ASP.NET Core MVC?*
+**Why not just use ASP.NET Core MVC?**
 
 Maybe you should. However, your tests will probably be orders of magnitude slower than FrankServer.
 
-*Does this support EntityFramework?*
+**Does this support EntityFramework?**
 
 Maybe you should use ASP.NET Core MVC. This is for people who want fast tests.
 
-*Do you recommend I use this on X project?*
+**Do you recommend I use this on X project?**
 
 I dunno? If you are asking that, maybe you should use ASP.NET Core MVC.
 
-*This looks incomplete.*
+**This looks incomplete.**
 
 Yes, yes it is. it's v0.1. What do you want from me?
 
-*Why "Frank"?*
+**Why "Frank"?**
 
 You ever heard of [Sinatra](http://sinatrarb.com)?
