@@ -14,6 +14,6 @@ jobs:
     - name: Test
       run: dotnet test
     - name: Pack
-      run: dotnet pack
+      run: dotnet pack -p:PackageVersion=${{ github.event.GITHUB_REF }}
     - name: Publish
-      run: dotnet nuget push ./Frank/bin/Debug/FrankServer.0.1.0.nupkg -k ${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./Frank/bin/Debug/FrankServer.${{ github.event.GITHUB_REF }}.nupkg -k ${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json
