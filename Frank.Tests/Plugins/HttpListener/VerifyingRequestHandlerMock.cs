@@ -2,22 +2,32 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
+using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers.DTO;
-using Frank.Plugins.HttpListener;
 
 namespace Frank.Tests.Plugins.HttpListener
 {
-    internal class HttpListenerServerWrapper : IVerifyingRequestHandler, IHttpServerWrapper
+    internal class VerifyingRequestHandlerMock
     {
-        private ConcurrentBag<Request> _requests;
-        private HttpListenerServer _listener;
+        private readonly ConcurrentBag<Request> _requests;
+        private Response _respondWith;
 
-        public HttpListenerServerWrapper(HttpListenerServer httpListenerServer)
+        public VerifyingRequestHandlerMock()
         {
             _requests = new ConcurrentBag<Request>();
-            _listener = httpListenerServer;
+        }
+
+        public void HandleRequest(Request request, IResponseBuffer buffer)
+        {
+            _requests.Add(request);
+            buffer.SetContentsOfBufferTo(_respondWith);
+            buffer.Flush();
+        }
+
+        public void SetupRequestHandlerToRespondWith(Response response)
+        {
+            _respondWith = response;
         }
 
         public void AssertHeadersCaseInsensitivelyContain(string expectedKey, string expectedValue)
@@ -60,31 +70,6 @@ namespace Frank.Tests.Plugins.HttpListener
         public void AssertThatTheRequestBodyIs(string expectedBody)
         {
             FirstRequest().Body.Should().Be(expectedBody);
-        }
-
-        public void SetupRequestHandlerToRespondWith(Response response)
-        {
-            Task.Run(() =>
-            {
-                _listener.RegisterRequestHandler((request, buffer) =>
-                {
-                    _requests.Add(request);
-                    buffer.SetContentsOfBufferTo(response);
-                    buffer.Flush();
-                });
-            });
-        }
-
-        public void Start()
-        {
-            _listener.Start(8020);
-        }
-
-        public string Host => "http://127.0.0.1:8020";
-
-        public void Stop()
-        {
-            _listener.Stop();
         }
     }
 }

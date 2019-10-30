@@ -13,19 +13,24 @@ namespace Frank.Tests.Plugins.HttpListener
     public class HttpListenerServerTests
     {
         private IRestResponse _response;
-        private IHttpServerWrapper _server;
-        private IVerifyingRequestHandler _requestHandler;
+        private VerifyingRequestHandlerMock _requestHandlerMock;
+        private HttpListenerServer _httpListenerServer;
+
+        private void StartServer()
+        {
+            _httpListenerServer.Start(8020);
+            _httpListenerServer.RegisterRequestHandler(_requestHandlerMock.HandleRequest);
+        }
 
         [SetUp]
         public void SetUp()
         {
-            var httpListenerServerWrapper = new HttpListenerServerWrapper(new HttpListenerServer());
-            _requestHandler = httpListenerServerWrapper;
-            _server = httpListenerServerWrapper;
+            _httpListenerServer = new HttpListenerServer();
+            _requestHandlerMock = new VerifyingRequestHandlerMock();
         }
 
         [TearDown]
-        public void TearDown() => _server.Stop();
+        public void TearDown() => _httpListenerServer.Stop();
 
         private void MakeRequest(string url, string path, Method method, Action<RestRequest> requestBuilder = null)
         {
@@ -56,18 +61,18 @@ namespace Frank.Tests.Plugins.HttpListener
         [Test]
         public void TimesOutWhenNoRequestProcessorRegistered()
         {
-            _server.Start();
-            MakeRequest(_server.Host, "/", Method.GET);
+            StartServer();
+            MakeRequest("http://127.0.0.1:8020", "/", Method.GET);
             AssertTimedOut();
         }
 
         [Test]
         public void CanServeRequestFromRequestProcessor()
         {
-            _server.Start();
-            _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            MakeRequest(_server.Host, "/", Method.GET);
+            MakeRequest("http://127.0.0.1:8020", "/", Method.GET);
 
             AssertContentIs("Hello world");
             AssertStatusIsOk();
@@ -77,27 +82,27 @@ namespace Frank.Tests.Plugins.HttpListener
         [Test]
         public void CanDeserialiseEmptyHttpRequest()
         {
-            _server.Start();
-            _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            MakeAMinimalGetRequest(_server.Host);
+            MakeAMinimalGetRequest("http://127.0.0.1:8020");
 
-            _requestHandler.AssertPathIs("/");
-            _requestHandler.AssertThatThereAreNoQueryParameters();
-            _requestHandler.AssertThatTheRequestBodyIsEmpty();
-            _requestHandler.AssertHeaderCountIs(2);
-            _requestHandler.AssertHeadersCaseInsensitivelyContain("Connection", "Keep-Alive");
-            _requestHandler.AssertHeadersCaseInsensitivelyContain("Host", "127.0.0.1:8020");
+            _requestHandlerMock.AssertPathIs("/");
+            _requestHandlerMock.AssertThatThereAreNoQueryParameters();
+            _requestHandlerMock.AssertThatTheRequestBodyIsEmpty();
+            _requestHandlerMock.AssertHeaderCountIs(2);
+            _requestHandlerMock.AssertHeadersCaseInsensitivelyContain("Connection", "Keep-Alive");
+            _requestHandlerMock.AssertHeadersCaseInsensitivelyContain("Host", "127.0.0.1:8020");
         }
 
         [Test]
         public void CanDeserialiseHttpRequest()
         {
-            _server.Start();
-            _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
             MakeRequest(
-                _server.Host,
+                "http://127.0.0.1:8020",
                 "/asd", Method.POST,
                 r =>
                 {
@@ -107,29 +112,29 @@ namespace Frank.Tests.Plugins.HttpListener
                 }
             );
 
-            _requestHandler.AssertPathIs("/asd");
+            _requestHandlerMock.AssertPathIs("/asd");
 
-            _requestHandler.AssertQueryParametersContain("z", "123");
-            _requestHandler.AssertThatTheRequestBodyIs("{}");
-            _requestHandler.AssertHeadersCaseInsensitivelyContain("Content-Type", "application/json");
+            _requestHandlerMock.AssertQueryParametersContain("z", "123");
+            _requestHandlerMock.AssertThatTheRequestBodyIs("{}");
+            _requestHandlerMock.AssertHeadersCaseInsensitivelyContain("Content-Type", "application/json");
         }
 
 
         [Test]
         public void CanDeserialiseHttpRequest2()
         {
-            _server.Start();
-            _requestHandler.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
             MakeRequest(
-                _server.Host,
+                "http://127.0.0.1:8020",
                 "/asd", Method.GET,
                 r => { r.AddParameter("j", "nice"); }
             );
 
-            _requestHandler.AssertPathIs("/asd");
-            _requestHandler.AssertQueryParametersContain("j", "nice");
-            _requestHandler.AssertThatTheRequestBodyIsEmpty();
+            _requestHandlerMock.AssertPathIs("/asd");
+            _requestHandlerMock.AssertQueryParametersContain("j", "nice");
+            _requestHandlerMock.AssertThatTheRequestBodyIsEmpty();
         }
     }
 }
