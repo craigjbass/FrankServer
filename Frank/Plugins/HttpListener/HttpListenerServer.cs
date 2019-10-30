@@ -35,7 +35,6 @@ namespace Frank.Plugins.HttpListener
             return ar =>
             {
                 HttpListenerContext c = ((System.Net.HttpListener) ar.AsyncState).EndGetContext(ar);
-                Console.WriteLine($"REQUEST {c.Request.Url}");
 
                 processRequest(
                     new RequestConverter(c.Request).Convert(),
