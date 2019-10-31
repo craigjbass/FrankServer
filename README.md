@@ -20,37 +20,9 @@ Add `FrankServer` as a NuGet dependency to your project.
 
 ## Usage
 
-Currently, you can create a project like this:
+Have a look at the [SampleProject](./SampleProject/Program.cs) for an example of how to use FrankServer
 
-```C#
-using System.Threading;
-using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
-
-namespace SampleProject
-{
-    class Program
-    {
-        static void Main()
-        {
-            Frank.Server
-                .Configure()
-                .ListenOn(80)
-                .WithRoutes(
-                    router =>
-                    {
-                        router.Get("/test").To((request) => Ok());
-                    }
-                )
-                .Build()
-                .Start();
-            
-            SpinWait.SpinUntil(() => false);
-        }
-    }
-}
-```
-
-This causes any GET request to `/test` to result in a 200 status code.
+Alternatively, look at [The Tests](./Frank.EndToEndTests/FrankTcpConnectionTest.cs), for a more in-depth look at what is working.
 
 ## FAQs
 

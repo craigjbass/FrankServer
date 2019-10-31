@@ -25,7 +25,7 @@ namespace Frank.EndToEndTests
         {
             ITestWebApplication webApplication = Server
                 .Configure()
-                .WithRoutes(
+                .OnRequest(
                     c => c.Get("/").To(request => ResponseBuilders.Ok().WithBody(new { a = 123 }))
                 ).ForTesting()
                 .Build();
@@ -45,7 +45,7 @@ namespace Frank.EndToEndTests
         {
             ITestWebApplication webApplication = Server
                 .Configure()
-                .WithRoutes(
+                .OnRequest(
                     c => c.Get("/").To(request => ResponseBuilders.Ok().WithBody(new { a = 123 }))
                 ).ForTesting()
                 .Build();

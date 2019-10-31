@@ -67,7 +67,7 @@ namespace Frank.EndToEndTests
 
         private void StartFrankWithRoutes(Action<IRouteConfigurer> action)
         {
-            _builder.WithRoutes(action);
+            _builder.OnRequest(action);
             _builder.ListenOn(_port);
             StartFrank();
         }

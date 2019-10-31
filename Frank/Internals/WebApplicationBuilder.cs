@@ -12,7 +12,7 @@ namespace Frank.Internals
         private IServer _server;
         private int _port;
 
-        public IWebApplicationBuilder WithRoutes(Action<IRouteConfigurer> action)
+        public IWebApplicationBuilder OnRequest(Action<IRouteConfigurer> action)
         {
             _requestRouterConfigurer = new RequestRouter();
             action(_requestRouterConfigurer);
@@ -28,6 +28,11 @@ namespace Frank.Internals
         public ITestWebApplicationBuilder ForTesting()
         {
             return new TestApplicationBuilder(this);
+        }
+
+        public IWebApplicationBuilderWithBefore<T> Before<T>(Func<T> onBefore)
+        {
+            throw new NotImplementedException();
         }
 
         public IWebApplication Build()
