@@ -8,14 +8,13 @@ namespace Frank.Internals
 {
     internal class WebApplicationBuilder : IWebApplicationBuilder
     {
-        private RequestRouter _requestRouterConfigurer;
         private IServer _server;
         private int _port;
+        private Action<IRouteConfigurer> _onRequest;
 
         public IWebApplicationBuilder OnRequest(Action<IRouteConfigurer> action)
         {
-            _requestRouterConfigurer = new RequestRouter();
-            action(_requestRouterConfigurer);
+            _onRequest = action;
             return this;
         }
 
@@ -37,8 +36,9 @@ namespace Frank.Internals
 
         public IWebApplication Build()
         {
-            return new WebApplication(_server ?? new HttpListenerServer(_port),
-                _requestRouterConfigurer ?? new RequestRouter()
+            return new WebApplication(
+                _server ?? new HttpListenerServer(_port),
+                _onRequest ?? (_ => {})
             );
         }
 

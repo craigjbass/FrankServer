@@ -41,23 +41,23 @@ namespace Frank.EndToEndTests
         }
         
         [Test]
-        public void CanDoThing()
+        public void ItCallsOnRequestOncePerRequest()
         {
+            var i = 0;
             ITestWebApplication webApplication = Server
                 .Configure()
                 .OnRequest(
-                    c => c.Get("/").To(request => ResponseBuilders.Ok().WithBody(new { a = 123 }))
+                    _ => i++
                 ).ForTesting()
                 .Build();
 
             webApplication.Start();
 
-            var response = webApplication.Execute(new Request());
+            webApplication.Execute(new Request());
+            webApplication.Execute(new Request());
 
             webApplication.Stop();
-            
-            response.Status.Should().Be(200);
-            Encoding.UTF8.GetString(response.Body).Should().Be("{\"a\":123}");
+            i.Should().Be(2);
         }
     }
 }

@@ -11,8 +11,8 @@ namespace Frank.Internals
     internal class WebApplication : IWebApplication
     {
         private readonly IServer _server;
-        private readonly IRequestRouter _requestRouter;
         private readonly List<Exception> _exceptions = new List<Exception>();
+        private readonly Action<IRouteConfigurer> _onRequest;
 
         internal interface IRequestRouter
         {
@@ -23,10 +23,10 @@ namespace Frank.Internals
             );
         }
 
-        public WebApplication(IServer server, IRequestRouter requestRouter)
+        public WebApplication(IServer server, Action<IRouteConfigurer> onRequest)
         {
             _server = server;
-            _requestRouter = requestRouter;
+            _onRequest = onRequest;
         }
 
         public void Start()
@@ -37,11 +37,13 @@ namespace Frank.Internals
 
         private void ProcessRequest(Request request, IResponseBuffer responseBuffer)
         {
+            var router = new RequestRouter();
+            _onRequest(router);
             try
             {
-                if (_requestRouter.CanRoute(request.Path))
+                if (router.CanRoute(request.Path))
                 {
-                    var actualResponse = _requestRouter.Route(request);
+                    var actualResponse = router.Route(request);
                     responseBuffer.SetContentsOfBufferTo(actualResponse);
                 }
                 else
