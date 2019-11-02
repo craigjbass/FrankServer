@@ -1,5 +1,8 @@
 name: .NET Core CI
-on: [push]
+on:
+  push:
+    branches:
+      - master
 jobs:
   build-and-test:
     strategy:
