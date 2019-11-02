@@ -19,6 +19,7 @@ namespace Frank.EndToEndTests
         private IWebApplication _webApplication;
         private IRestResponse _response;
         private int _port;
+        private bool _expectExceptionInTeardown = false;
 
         private void MakeGetRequest(string path)
         {
@@ -50,25 +51,38 @@ namespace Frank.EndToEndTests
         {
             _port = 8019;
             _builder = Server.Configure();
+            _expectExceptionInTeardown = false;
         }
 
         [TearDown]
         public void TearDown()
         {
-            StopFrank();
+            var thrown = false;
+            try
+            {
+                StopFrank();
+            }
+            catch (Exception e)
+            {
+                if (!_expectExceptionInTeardown) throw e;
+
+                thrown = true;
+            }
+
+            if (_expectExceptionInTeardown && !thrown)
+            {
+                throw new Exception("Expected an exception, but one was not thrown.");
+            }
         }
 
         private void StartFrank()
         {
-            _builder.ListenOn(_port);
-            _webApplication = _builder.Build();
-            _webApplication.Start();
+            _webApplication = _builder.StartListeningOn(_port);
         }
 
         private void StartFrankWithRoutes(Action<IRouteConfigurer> action)
         {
-            _builder.WithRoutes(action);
-            _builder.ListenOn(_port);
+            _builder.OnRequest(action);
             StartFrank();
         }
 
@@ -193,6 +207,40 @@ namespace Frank.EndToEndTests
             processedRequest?.QueryParameters["bar"].Should().Be("123");
             processedRequest?.Body.Should().Be("\"This is the body!!\"");
             processedRequest?.Headers["x-api-key"].Should().Be("1234supersecure");
+        }
+        
+        [Test]
+        public void CanExecuteBeforeAndAfterHandlers()
+        {
+            var customContext = new LifecycleHooksSpy();
+            _builder
+                .Before(() =>
+                {
+                    customContext.Before();
+                    return customContext;
+                })
+                .After(context => { context.After(); })
+                .OnRequest(((route, context) =>
+                {
+                    context.Request();
+                    route.Get("/").To(() =>
+                    {
+                        context.RouteHandler();
+                        throw new Exception();
+                    });
+                }));
+                
+            StartFrank();
+
+            var response = new RestClient("http://127.0.0.1:8019/").Execute(
+                new RestRequest("/", Method.GET)
+            );
+
+            customContext._list.Should().ContainInOrder(
+                "before", "request", "route-handler", "after"
+            );
+
+            _expectExceptionInTeardown = true;
         }
     }
 }

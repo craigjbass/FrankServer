@@ -6,21 +6,31 @@ namespace SampleProject
 {
     class Program
     {
+        class ExampleDatabaseConnection
+        {
+            public void Close()
+            {
+            }
+
+            public void Query()
+            {
+            }
+        }
         static void Main()
         {
             Frank.Server
                 .Configure()
-                .ListenOn(8000)
-                .WithRoutes(
-                    router =>
+                .Before(() => { return new ExampleDatabaseConnection(); })
+                .After(dbConnection => { dbConnection.Close(); })
+                .OnRequest(
+                    (route, dbConnection) =>
                     {
-                        router.Get("/test").To(Test);
-                        router.Get("/hello").To(Hello);
+                        route.Get("/test").To(Test);
+                        route.Get("/hello").To(Hello);
                     }
                 )
-                .Build()
-                .Start();
-            
+                .StartListeningOn(8000);
+                
             SpinWait.SpinUntil(() => false);
         }
 

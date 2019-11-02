@@ -11,8 +11,10 @@ namespace Frank.Internals
     internal class WebApplication : IWebApplication
     {
         private readonly IServer _server;
-        private readonly IRequestRouter _requestRouter;
         private readonly List<Exception> _exceptions = new List<Exception>();
+        private readonly Action<IRouteConfigurer, object> _onRequest;
+        private readonly Func<object> _onBefore;
+        private readonly Action<object> _onAfter;
 
         internal interface IRequestRouter
         {
@@ -23,10 +25,16 @@ namespace Frank.Internals
             );
         }
 
-        public WebApplication(IServer server, IRequestRouter requestRouter)
+        public WebApplication(
+            IServer server, 
+            Action<IRouteConfigurer, object> onRequest, 
+            Func<object> onBefore,
+            Action<object> onAfter)
         {
             _server = server;
-            _requestRouter = requestRouter;
+            _onRequest = onRequest;
+            _onBefore = onBefore;
+            _onAfter = onAfter;
         }
 
         public void Start()
@@ -37,11 +45,15 @@ namespace Frank.Internals
 
         private void ProcessRequest(Request request, IResponseBuffer responseBuffer)
         {
+            var context = _onBefore();
+            var router = new RequestRouter();
+            _onRequest(router, context);
+            
             try
             {
-                if (_requestRouter.CanRoute(request.Path))
+                if (router.CanRoute(request.Path))
                 {
-                    var actualResponse = _requestRouter.Route(request);
+                    var actualResponse = router.Route(request);
                     responseBuffer.SetContentsOfBufferTo(actualResponse);
                 }
                 else
@@ -63,19 +75,20 @@ namespace Frank.Internals
             finally
             {
                 responseBuffer.Flush();
+                _onAfter(context);
             }
         }
 
         public void Stop()
         {
+            _server.Stop();
+            
             if (_exceptions.Any())
             {
                 var exception = new Exception();
                 exception.Data.Add("Exceptions", _exceptions);
                 throw exception;
             }
-
-            _server.Stop();
         }
     }
 }
