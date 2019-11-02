@@ -1,5 +1,6 @@
 ﻿using System;
 using Frank.API.WebDevelopers;
+using Frank.ExtensionPoints;
 using Frank.Plugins.HttpListener;
 using Frank.Plugins.TestHarness;
 
@@ -7,7 +8,6 @@ namespace Frank.Internals
 {
     internal class WebApplicationBuilder : IWebApplicationBuilder
     {
-        private int _port;
         private Action<IRouteConfigurer, object> _onRequest;
         private Func<object> _onBefore;
         private Action<object> _onAfter;
@@ -21,18 +21,12 @@ namespace Frank.Internals
         public IWebApplicationBuilderWithBefore<T> Before<T>(Func<T> onBefore)
         {
             _onBefore = () => onBefore();
-            return new Foo<T>(this);
+            return new BuildWithLifeCycleHooks<T>(this);
         }
 
         public IWebApplication StartListeningOn(int port)
         {
-            _port = port;
-            var app = new WebApplication(
-                new HttpListenerServer(_port),
-                _onRequest ?? ((_,_2) => { }),
-                _onBefore ?? (() => null),
-                _onAfter ?? ((_) => {})
-            );
+            var app = CreateApplication(new HttpListenerServer(port));
             app.Start();
 
             return app;
@@ -41,24 +35,29 @@ namespace Frank.Internals
         public ITestWebApplication StartTesting()
         {
             var testHarnessServer = new TestHarnessServer();
-            var iTestWebApplication = new Adapter(
-                new WebApplication(
-                    testHarnessServer,
-                    _onRequest ?? ((_,_2) => { }),
-                    _onBefore ?? (() => null),
-                    _onAfter ?? ((_) => {})
-                ), 
+            var webApplication = new Adapter(
+                CreateApplication(testHarnessServer), 
                 testHarnessServer
             );
-            iTestWebApplication.Start();
-            return iTestWebApplication;
+            webApplication.Start();
+            return webApplication;
         }
 
-        class Foo<T> : IWebApplicationBuilderWithBefore<T>
+        private WebApplication CreateApplication(IServer server)
+        {
+            return new WebApplication(
+                server,
+                _onRequest ?? ((_,_2) => { }),
+                _onBefore ?? (() => null),
+                _onAfter ?? ((_) => {})
+            );
+        }
+
+        class BuildWithLifeCycleHooks<T> : IWebApplicationBuilderWithBefore<T>
         {
             private readonly WebApplicationBuilder _webApplicationBuilder;
 
-            public Foo(WebApplicationBuilder webApplicationBuilder)
+            public BuildWithLifeCycleHooks(WebApplicationBuilder webApplicationBuilder)
             {
                 _webApplicationBuilder = webApplicationBuilder;
             }
