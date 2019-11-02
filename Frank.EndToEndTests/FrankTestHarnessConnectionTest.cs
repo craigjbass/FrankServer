@@ -11,7 +11,7 @@ namespace Frank.EndToEndTests
         [Test]
         public void CanMakeTestRequestAndRespondWith404()
         {
-            ITestWebApplication webApplication = Server.Configure().ForTesting().Build();
+            ITestWebApplication webApplication = Server.Configure().StartTesting();
 
             webApplication.Start();
 
@@ -27,8 +27,7 @@ namespace Frank.EndToEndTests
                 .Configure()
                 .OnRequest(
                     c => c.Get("/").To(request => ResponseBuilders.Ok().WithBody(new { a = 123 }))
-                ).ForTesting()
-                .Build();
+                ).StartTesting();
 
             webApplication.Start();
 
@@ -48,8 +47,7 @@ namespace Frank.EndToEndTests
                 .Configure()
                 .OnRequest(
                     _ => i++
-                ).ForTesting()
-                .Build();
+                ).StartTesting();
 
             webApplication.Start();
 

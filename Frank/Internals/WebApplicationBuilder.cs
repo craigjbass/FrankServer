@@ -8,7 +8,6 @@ namespace Frank.Internals
 {
     internal class WebApplicationBuilder : IWebApplicationBuilder
     {
-        private IServer _server;
         private int _port;
         private Action<IRouteConfigurer> _onRequest;
 
@@ -18,45 +17,33 @@ namespace Frank.Internals
             return this;
         }
 
-        public IWebApplicationBuilder ListenOn(int port)
-        {
-            _port = port;
-            return this;
-        }
-
-        public ITestWebApplicationBuilder ForTesting()
-        {
-            return new TestApplicationBuilder(this);
-        }
-
         public IWebApplicationBuilderWithBefore<T> Before<T>(Func<T> onBefore)
         {
             throw new NotImplementedException();
         }
 
-        public IWebApplication Build()
+        public IWebApplication StartListeningOn(int port)
         {
-            return new WebApplication(
-                _server ?? new HttpListenerServer(_port),
-                _onRequest ?? (_ => {})
+            _port = port;
+            var app = new WebApplication(
+                new HttpListenerServer(_port),
+                _onRequest ?? (_ => { })
             );
+            app.Start();
+
+            return app;
         }
 
-        private class TestApplicationBuilder : ITestWebApplicationBuilder
+        public ITestWebApplication StartTesting()
         {
-            private readonly WebApplicationBuilder _webApplicationBuilder;
-
-            public TestApplicationBuilder(WebApplicationBuilder webApplicationBuilder)
-            {
-                _webApplicationBuilder = webApplicationBuilder;
-            }
-
-            public ITestWebApplication Build()
-            {
-                var testHarnessServer = new TestHarnessServer();
-                _webApplicationBuilder._server = testHarnessServer;
-                return new Adapter(_webApplicationBuilder.Build(), testHarnessServer);
-            }
+            var testHarnessServer = new TestHarnessServer();
+            return new Adapter(
+                new WebApplication(
+                    testHarnessServer,
+                    _onRequest ?? (_ => { })
+                ), 
+                testHarnessServer
+            );
         }
     }
 }

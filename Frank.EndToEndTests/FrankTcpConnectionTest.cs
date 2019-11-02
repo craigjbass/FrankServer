@@ -60,15 +60,12 @@ namespace Frank.EndToEndTests
 
         private void StartFrank()
         {
-            _builder.ListenOn(_port);
-            _webApplication = _builder.Build();
-            _webApplication.Start();
+            _webApplication = _builder.StartListeningOn(_port);
         }
 
         private void StartFrankWithRoutes(Action<IRouteConfigurer> action)
         {
             _builder.OnRequest(action);
-            _builder.ListenOn(_port);
             StartFrank();
         }
 

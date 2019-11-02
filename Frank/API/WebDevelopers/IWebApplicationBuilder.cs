@@ -5,10 +5,9 @@ namespace Frank.API.WebDevelopers
     public interface IWebApplicationBuilder
     {
         IWebApplicationBuilder OnRequest(Action<IRouteConfigurer> action);
-        IWebApplicationBuilder ListenOn(int port);
-        IWebApplication Build();
-        ITestWebApplicationBuilder ForTesting();
         IWebApplicationBuilderWithBefore<T> Before<T>(Func<T> onBefore);
+        IWebApplication StartListeningOn(int port);
+        ITestWebApplication StartTesting();
     }
     
     public interface IWebApplicationBuilderWithBefore<T> : IWebApplicationBuilder

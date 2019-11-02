@@ -20,12 +20,8 @@ namespace SampleProject
         {
             Frank.Server
                 .Configure()
-                .ListenOn(8000)
                 .Before(() => { return new ExampleDatabaseConnection(); })
-                .After(dbConnection =>
-                {
-                    dbConnection.Close();
-                })
+                .After(dbConnection => { dbConnection.Close(); })
                 .OnRequest(
                     (route, dbConnection) =>
                     {
@@ -33,9 +29,8 @@ namespace SampleProject
                         route.Get("/hello").To(Hello);
                     }
                 )
-                .Build()
-                .Start();
-            
+                .StartListeningOn(8000);
+                
             SpinWait.SpinUntil(() => false);
         }
 
