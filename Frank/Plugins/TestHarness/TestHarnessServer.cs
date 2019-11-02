@@ -16,7 +16,7 @@ namespace Frank.Plugins.TestHarness
 
         public Response Execute(Request request)
         {
-            request.Path = "/";
+            if(request.Path == null) request.Path = "/";
             var buffer = new TestResponseBuffer();
             _processRequest(request, buffer);
             return buffer.GetContents();
