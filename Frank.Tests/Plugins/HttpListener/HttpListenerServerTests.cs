@@ -9,7 +9,7 @@ using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
 
 namespace Frank.Tests.Plugins.HttpListener
 {
-    [SingleThreaded]
+    [NonParallelizable]
     public class HttpListenerServerTests
     {
         private IRestResponse _response;
@@ -61,7 +61,7 @@ namespace Frank.Tests.Plugins.HttpListener
         [Test]
         public void TimesOutWhenNoRequestProcessorRegistered()
         {
-            StartServer();
+            _httpListenerServer.Start();
             MakeRequest("http://127.0.0.1:8020", "/", Method.GET);
             AssertTimedOut();
         }

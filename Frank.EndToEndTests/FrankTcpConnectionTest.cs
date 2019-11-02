@@ -12,7 +12,7 @@ using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
 
 namespace Frank.EndToEndTests
 {
-    [SingleThreaded]
+    [NonParallelizable]
     public class FrankTcpConnectionTest
     {
         private IWebApplicationBuilder _builder;

@@ -9,9 +9,9 @@ namespace Frank.Plugins.TestHarness
     {
         private Action<Request, IResponseBuffer> _processRequest;
 
-        public void RegisterRequestHandler(Action<Request, IResponseBuffer> processRequest)
+        public void RegisterRequestHandler(Action<Request, IResponseBuffer> requestHandler)
         {
-            _processRequest = processRequest;
+            _processRequest = requestHandler;
         }
 
         public Response Execute(Request request)
