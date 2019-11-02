@@ -13,7 +13,6 @@ namespace Frank.Plugins.HttpListener
     internal class HttpListenerServer : IServer
     {
         private System.Net.HttpListener _httpListener;
-        private bool _running;
         private int _port;
 
         public HttpListenerServer(int port)
@@ -23,8 +22,6 @@ namespace Frank.Plugins.HttpListener
 
         public void Start()
         {
-            _running = true;
-
             _httpListener = new System.Net.HttpListener();
 
             _httpListener.Prefixes.Add($"http://+:{_port}/");
@@ -54,7 +51,7 @@ namespace Frank.Plugins.HttpListener
 
                     _httpListener.BeginGetContext(TryToPassRequestToHandler(requestHandler), _httpListener);
                 }
-                catch (ObjectDisposedException e)
+                catch (ObjectDisposedException)
                 {
                 }
                 catch (HttpListenerException exception)
