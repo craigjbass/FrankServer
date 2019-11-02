@@ -10,9 +10,9 @@ namespace Frank.API.WebDevelopers
         ITestWebApplication StartTesting();
     }
     
-    public interface IWebApplicationBuilderWithBefore<T> : IWebApplicationBuilder
+    public interface IWebApplicationBuilderWithBefore<T>
     {
         IWebApplicationBuilderWithBefore<T> After(Action<T> onAfter);
-        IWebApplicationBuilderWithBefore<T> OnRequest(Action<IRouteConfigurer, T> action);
+        IWebApplicationBuilder OnRequest(Action<IRouteConfigurer, T> action);
     }
 }
