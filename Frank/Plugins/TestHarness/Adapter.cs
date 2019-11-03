@@ -1,6 +1,8 @@
+using System.Text;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
+using Newtonsoft.Json;
 
 namespace Frank.Plugins.TestHarness
 {
@@ -19,10 +21,10 @@ namespace Frank.Plugins.TestHarness
 
         public void Stop() => _application.Stop();
 
-        public Response Execute(Request request) => _testHarness.Execute(request);
+        public ITestResponse Execute(Request request) => _testHarness.Execute(request);
     }
 
-    internal class TestResponseBuffer : IResponseBuffer
+    internal class TestResponseBuffer : IResponseBuffer, ITestResponse
     {
         private Response _response;
 
@@ -36,9 +38,9 @@ namespace Frank.Plugins.TestHarness
             
         }
 
-        public Response GetContents()
-        {
-            return _response;
-        }
+        public int Status => _response.Status;
+
+        public string Body => Encoding.UTF8.GetString(_response.Body);
+        public dynamic DeserializeBody() => JsonConvert.DeserializeObject(Body);
     }
 }

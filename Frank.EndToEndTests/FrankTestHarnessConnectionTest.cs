@@ -34,7 +34,7 @@ namespace Frank.EndToEndTests
             webApplication.Stop();
 
             response.Status.Should().Be(200);
-            Encoding.UTF8.GetString(response.Body).Should().Be("{\"a\":123}");
+            response.Body.Should().Be("{\"a\":123}");
         }
 
         [Test]

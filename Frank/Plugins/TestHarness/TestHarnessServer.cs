@@ -1,5 +1,6 @@
 using System;
 using Frank.API.PluginDevelopers;
+using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
 using Frank.ExtensionPoints;
 
@@ -14,12 +15,12 @@ namespace Frank.Plugins.TestHarness
             _processRequest = requestHandler;
         }
 
-        public Response Execute(Request request)
+        public ITestResponse Execute(Request request)
         {
             if(request.Path == null) request.Path = "/";
             var buffer = new TestResponseBuffer();
             _processRequest(request, buffer);
-            return buffer.GetContents();
+            return buffer;
         }
 
         public void Start()

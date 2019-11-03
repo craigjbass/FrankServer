@@ -1,12 +1,9 @@
-using System.Text;
-using System.Text.Json.Serialization;
 using Frank.API.WebDevelopers.DTO;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace SampleProject.Tests
 {
-    public class Tests
+    public class SampleProjectAppTests
     {
         [Test]
         public void CanCheckJsonResponseBodyContainsSuccess()
@@ -18,9 +15,8 @@ namespace SampleProject.Tests
                 Path = "/test",
                 Method = "GET"
             });
-
-            var body = Encoding.UTF8.GetString(response.Body);
-            dynamic deserializedBody = JsonConvert.DeserializeObject(body);
+            
+            var deserializedBody = response.DeserializeBody();
             
             Assert.AreEqual(true, (bool)deserializedBody.Success);
         }

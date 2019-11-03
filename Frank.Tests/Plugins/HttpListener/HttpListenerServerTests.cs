@@ -129,7 +129,10 @@ namespace Frank.Tests.Plugins.HttpListener
             MakeRequest(
                 "http://127.0.0.1:8020",
                 "/asd", Method.GET,
-                r => { r.AddParameter("j", "nice"); }
+                r =>
+                {
+                    r.AddParameter("j", "nice");
+                }
             );
 
             _requestHandlerMock.AssertPathIs("/asd");
