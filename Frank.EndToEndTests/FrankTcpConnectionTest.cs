@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Text;
 using FluentAssertions;
@@ -9,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using RestSharp;
 using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
+// ReSharper disable PossibleNullReferenceException
 
 namespace Frank.EndToEndTests
 {
@@ -19,7 +21,7 @@ namespace Frank.EndToEndTests
         private IWebApplication _webApplication;
         private IRestResponse _response;
         private int _port;
-        private bool _expectExceptionInTeardown = false;
+        private bool _expectExceptionInTeardown;
 
         private void MakeGetRequest(string path)
         {
@@ -90,15 +92,6 @@ namespace Frank.EndToEndTests
         {
             _webApplication.Stop();
         }
-        
-        [Test]
-        public void CanServeNotFound()
-        {
-            StartFrank();
-
-            MakeGetRequest("/");
-            TheResponse().StatusCode.Should().Be(404);
-        }
 
         [Test]
         public void CanServeNotFoundTwice()
@@ -110,6 +103,34 @@ namespace Frank.EndToEndTests
 
             MakeGetRequest("/another-route");
             TheResponse().StatusCode.Should().Be(404);
+        }
+
+        [TestCase("/custom", 200, "Custom Body", "X-Header-Here", "A Value")]
+        [TestCase("/error", 500, "An error occurred", "X-Error", "Yes")]
+        public void ResponseContainsARawBodyStatusAndHeaders(
+            string routePath, int status, string body, string headerKey, string headerValue
+        )
+        {
+            _builder
+                .OnRequest(route =>
+                {
+                    route.Get(routePath).To(() =>
+                    {
+                        return NewResponseWithStatus(status)
+                            .BodyFromString(body)
+                            .WithHeader(headerKey, headerValue);
+                    });
+                });
+
+            StartFrank();
+
+            var response = new RestClient("http://127.0.0.1:8019/").Execute(
+                new RestRequest(routePath, Method.GET)
+            );
+
+            response.Content.Should().Be(body);
+            response.StatusCode.Should().Be(status);
+            response.Headers.FirstOrDefault(h => h.Name == headerKey).Value.Should().Be(headerValue);
         }
 
         [TestCase("/success")]
@@ -131,16 +152,15 @@ namespace Frank.EndToEndTests
         }
 
         [Test]
-        public void CanSerializeResponseIntoHttpResponse()
+        public void CanSerializeJsonResponseIntoHttpBody()
         {
             StartFrankWithRoutes(
                 router =>
                 {
                     router.Get("/foo/2")
-                        .To(() => Ok().WithBody(new {Id = 2}));
+                        .To(() => Ok().WithJsonBody(new {Id = 2}));
                 }
             );
-
 
             MakeGetRequest("/foo/2");
 
@@ -208,7 +228,7 @@ namespace Frank.EndToEndTests
             processedRequest?.Body.Should().Be("\"This is the body!!\"");
             processedRequest?.Headers["x-api-key"].Should().Be("1234supersecure");
         }
-        
+
         [Test]
         public void CanExecuteBeforeAndAfterHandlers()
         {
@@ -229,10 +249,10 @@ namespace Frank.EndToEndTests
                         throw new Exception();
                     });
                 }));
-                
+
             StartFrank();
 
-            var response = new RestClient("http://127.0.0.1:8019/").Execute(
+            new RestClient("http://127.0.0.1:8019/").Execute(
                 new RestRequest("/", Method.GET)
             );
 

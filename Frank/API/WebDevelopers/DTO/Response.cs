@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -5,8 +6,9 @@ namespace Frank.API.WebDevelopers.DTO
 {
     public struct Response
     {
-        public int Status;
-        public byte[] Body { get; set; }
+        internal int Status;
+        internal Dictionary<string, string> Headers;
+        internal byte[] Body;
     }
 
     public static class ResponseModifiers
@@ -16,9 +18,14 @@ namespace Frank.API.WebDevelopers.DTO
             response.Body = Encoding.UTF8.GetBytes(body);
             return response;
         }
-
-
-        public static Response WithBody(this Response response, object body)
+        
+        public static Response WithHeader(this Response response, string xHeaderHere, string aValue)
+        {
+            response.Headers.Add(xHeaderHere, aValue);
+            return response;
+        }
+        
+        public static Response WithJsonBody(this Response response, object body)
         {
             return response.BodyFromString(JsonConvert.SerializeObject(body));
         }
@@ -28,6 +35,10 @@ namespace Frank.API.WebDevelopers.DTO
     {
         public static Response Ok() => NewResponseWithStatus(200);
         public static Response Created() => NewResponseWithStatus(201);
-        private static Response NewResponseWithStatus(int code) => new Response {Status = code};
+        public static Response NewResponseWithStatus(int code) => new Response
+        {
+            Status = code,
+            Headers = new Dictionary<string, string>()
+        };
     }
 }

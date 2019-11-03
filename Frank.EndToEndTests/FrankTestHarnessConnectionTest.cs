@@ -26,7 +26,7 @@ namespace Frank.EndToEndTests
             ITestWebApplication webApplication = Server
                 .Configure()
                 .OnRequest(
-                    c => c.Get("/").To(request => Ok().WithBody(new {a = 123}))
+                    c => c.Get("/").To(request => Ok().WithJsonBody(new {a = 123}))
                 ).StartTesting();
 
             var response = webApplication.Execute(new Request());

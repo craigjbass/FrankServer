@@ -36,14 +36,14 @@ namespace SampleProject
         
         private static Response Test()
         {
-            return Ok().WithBody(new {Success = true});
+            return Ok().WithJsonBody(new {Success = true});
         }
 
         private static Response Hello(Request request)
         {
             var isHello = request.QueryParameters.ContainsKey("what") && request.QueryParameters["what"] == "hello";
 
-            return Ok().WithBody(isHello ? new {message = "Yes?"} : new {message = "Rude."});
+            return Ok().WithJsonBody(isHello ? new {message = "Yes?"} : new {message = "Rude."});
         }
     }
 }

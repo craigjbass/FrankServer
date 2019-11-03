@@ -5,6 +5,7 @@ using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
 using Frank.ExtensionPoints;
+using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
 
 namespace Frank.Internals
 {
@@ -26,8 +27,8 @@ namespace Frank.Internals
         }
 
         public WebApplication(
-            IServer server, 
-            Action<IRouteConfigurer, object> onRequest, 
+            IServer server,
+            Action<IRouteConfigurer, object> onRequest,
             Func<object> onBefore,
             Action<object> onAfter)
         {
@@ -48,7 +49,7 @@ namespace Frank.Internals
             var context = _onBefore();
             var router = new RequestRouter();
             _onRequest(router, context);
-            
+
             try
             {
                 if (router.CanRoute(request.Path))
@@ -58,19 +59,15 @@ namespace Frank.Internals
                 }
                 else
                 {
-                    responseBuffer.SetContentsOfBufferTo(new Response
-                    {
-                        Status = 404
-                    });
+                    responseBuffer.SetContentsOfBufferTo(NewResponseWithStatus(404));
                 }
             }
             catch (Exception e)
             {
                 _exceptions.Add(e);
-                responseBuffer.SetContentsOfBufferTo(new Response
-                {
-                    Status = 500
-                }.BodyFromString(_exceptions.First().ToString()));
+                responseBuffer.SetContentsOfBufferTo(
+                    NewResponseWithStatus(500).BodyFromString(_exceptions.First().ToString())
+                );
             }
             finally
             {
@@ -82,7 +79,7 @@ namespace Frank.Internals
         public void Stop()
         {
             _server.Stop();
-            
+
             if (_exceptions.Any())
             {
                 var exception = new Exception();
