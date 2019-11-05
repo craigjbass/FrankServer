@@ -16,12 +16,9 @@ namespace Frank.Plugins.HttpListener
 
         public void SetContentsOfBufferTo(Response response)
         {
-            if (response.Headers.Count > 0)
-            {
-                var keyValuePair = response.Headers.First();
-                _response.AddHeader(keyValuePair.Key, keyValuePair.Value);    
-            }
-            
+            foreach (var header in response.Headers) 
+                _response.AddHeader(header.Key, header.Value);
+            _response.Headers["Server"] = "FrankServer";
             _response.StatusCode = response.Status;
             _response.OutputStream.Write(response.Body);
         }

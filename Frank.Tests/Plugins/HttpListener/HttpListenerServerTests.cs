@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using FluentAssertions;
 using Frank.API.WebDevelopers.DTO;
@@ -6,6 +7,7 @@ using Frank.Plugins.HttpListener;
 using NUnit.Framework;
 using RestSharp;
 using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
+// ReSharper disable PossibleNullReferenceException
 
 namespace Frank.Tests.Plugins.HttpListener
 {
@@ -43,12 +45,19 @@ namespace Frank.Tests.Plugins.HttpListener
             _response = client.Execute(request);
         }
 
-        private static void MakeAMinimalGetRequest(string url)
+        private static void MakeAnEmptyGetRequest(string url)
         {
             var request = WebRequest.Create(url);
             request.Method = "GET";
             request.GetResponse();
         }
+        
+        private void AssertHeadersContain(string key, string expected) 
+            => _response.Headers
+                .FirstOrDefault(p => p.Name == key)
+                .Value
+                .Should()
+                .Be(expected);
 
         private void AssertStatusCodeIs(int expected) => _response.StatusCode.Should().Be(expected);
 
@@ -67,25 +76,12 @@ namespace Frank.Tests.Plugins.HttpListener
         }
 
         [Test]
-        public void CanServeRequestFromRequestProcessor()
+        public void CanDeserialiseAnEmptyHttpGetRequest()
         {
             StartServer();
             _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
 
-            MakeRequest("http://127.0.0.1:8020", "/", Method.GET);
-
-            AssertContentIs("Hello world");
-            AssertStatusIsOk();
-        }
-
-
-        [Test]
-        public void CanDeserialiseEmptyHttpRequest()
-        {
-            StartServer();
-            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
-
-            MakeAMinimalGetRequest("http://127.0.0.1:8020");
+            MakeAnEmptyGetRequest("http://127.0.0.1:8020");
 
             _requestHandlerMock.AssertPathIs("/");
             _requestHandlerMock.AssertThatThereAreNoQueryParameters();
@@ -96,7 +92,24 @@ namespace Frank.Tests.Plugins.HttpListener
         }
 
         [Test]
-        public void CanDeserialiseHttpRequest()
+        public void CanDeserialiseAnHttpGetRequest()
+        {
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
+
+            MakeRequest(
+                "http://127.0.0.1:8020",
+                "/asd", Method.GET,
+                r => { r.AddParameter("j", "nice"); }
+            );
+
+            _requestHandlerMock.AssertPathIs("/asd");
+            _requestHandlerMock.AssertQueryParametersContain("j", "nice");
+            _requestHandlerMock.AssertThatTheRequestBodyIsEmpty();
+        }
+
+        [Test]
+        public void CanDeserialiseAnHttpPostRequest()
         {
             StartServer();
             _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
@@ -119,25 +132,24 @@ namespace Frank.Tests.Plugins.HttpListener
             _requestHandlerMock.AssertHeadersCaseInsensitivelyContain("Content-Type", "application/json");
         }
 
-
         [Test]
-        public void CanDeserialiseHttpRequest2()
+        public void CanSerialiseAnHttpResponse()
         {
             StartServer();
-            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok().BodyFromString("Hello world"));
-
-            MakeRequest(
-                "http://127.0.0.1:8020",
-                "/asd", Method.GET,
-                r =>
-                {
-                    r.AddParameter("j", "nice");
-                }
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(
+                Ok()
+                    .WithHeader("X-Authentication-Scheme", "DangerousBespoke")
+                    .WithHeader("Content-Type", "plain/text")
+                    .BodyFromString("Hello world")
             );
 
-            _requestHandlerMock.AssertPathIs("/asd");
-            _requestHandlerMock.AssertQueryParametersContain("j", "nice");
-            _requestHandlerMock.AssertThatTheRequestBodyIsEmpty();
+            MakeRequest("http://127.0.0.1:8020", "/", Method.GET);
+
+            AssertHeadersContain("X-Authentication-Scheme", "DangerousBespoke");
+            AssertHeadersContain("Content-Type", "plain/text");
+            AssertHeadersContain("Server", "FrankServer");
+            AssertContentIs("Hello world");
+            AssertStatusIsOk();
         }
     }
 }
