@@ -1,5 +1,6 @@
 using Frank.API.WebDevelopers.DTO;
 using NUnit.Framework;
+using static Frank.API.WebDevelopers.DTO.RequestConstructors;
 
 namespace SampleProject.Tests
 {
@@ -10,11 +11,7 @@ namespace SampleProject.Tests
         {
             var testWebApplication = new SampleProjectApp().CreateApplication().StartTesting();
 
-            var response = testWebApplication.Execute(new Request()
-            {
-                Path = "/test",
-                Method = "GET"
-            });
+            var response = testWebApplication.Execute(Get().WithPath("/test"));
             
             var deserializedBody = response.DeserializeBody();
             

@@ -1,7 +1,7 @@
 ﻿using System;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
-using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
+using static Frank.API.WebDevelopers.DTO.ResponseConstructors;
 
 
 namespace SampleProject

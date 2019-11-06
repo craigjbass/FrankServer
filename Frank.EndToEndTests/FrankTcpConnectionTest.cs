@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using RestSharp;
-using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
+using static Frank.API.WebDevelopers.DTO.ResponseConstructors;
 // ReSharper disable PossibleNullReferenceException
 
 namespace Frank.EndToEndTests

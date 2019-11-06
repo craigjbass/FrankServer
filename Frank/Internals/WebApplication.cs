@@ -5,7 +5,7 @@ using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
 using Frank.ExtensionPoints;
-using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
+using static Frank.API.WebDevelopers.DTO.ResponseConstructors;
 
 namespace Frank.Internals
 {

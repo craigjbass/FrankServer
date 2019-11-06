@@ -31,7 +31,7 @@ namespace Frank.API.WebDevelopers.DTO
         }
     }
 
-    public static class ResponseBuilders
+    public static class ResponseConstructors
     {
         public static Response Ok() => NewResponseWithStatus(200);
         public static Response Created() => NewResponseWithStatus(201);

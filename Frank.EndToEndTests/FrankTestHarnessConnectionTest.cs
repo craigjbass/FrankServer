@@ -4,7 +4,8 @@ using FluentAssertions;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
 using NUnit.Framework;
-using static Frank.API.WebDevelopers.DTO.ResponseBuilders;
+using static Frank.API.WebDevelopers.DTO.RequestConstructors;
+using static Frank.API.WebDevelopers.DTO.ResponseConstructors;
 
 namespace Frank.EndToEndTests
 {
@@ -15,7 +16,7 @@ namespace Frank.EndToEndTests
         {
             ITestWebApplication webApplication = Server.Configure().StartTesting();
 
-            var response = webApplication.Execute(new Request());
+            var response = webApplication.Execute(Get());
 
             response.Status.Should().Be(404);
         }
@@ -26,15 +27,27 @@ namespace Frank.EndToEndTests
             ITestWebApplication webApplication = Server
                 .Configure()
                 .OnRequest(
-                    c => c.Get("/").To(request => Ok().WithJsonBody(new {a = 123}))
-                ).StartTesting();
+                    c =>
+                    {
+                        c.Get("/").To(request => Ok().WithJsonBody(new {a = 123}));
+                        c.Post("/post").To(request => Ok().WithJsonBody(request));
+                    }).StartTesting();
 
-            var response = webApplication.Execute(new Request());
+            {
+                var response = webApplication.Execute(Get());
+                response.Status.Should().Be(200);
+                response.Body.Should().Be("{\"a\":123}");
+            }
+
+            {
+                var response = webApplication.Execute(Post().WithPath("/post"));
+                response.Status.Should().Be(200);
+                response.Body.Should().Be(
+                    "{\"Path\":\"/post\",\"Body\":\"\",\"QueryParameters\":{},\"Headers\":{},\"Method\":\"POST\"}"
+                );
+            }
 
             webApplication.Stop();
-
-            response.Status.Should().Be(200);
-            response.Body.Should().Be("{\"a\":123}");
         }
 
         [Test]
@@ -47,8 +60,8 @@ namespace Frank.EndToEndTests
                     _ => i++
                 ).StartTesting();
 
-            webApplication.Execute(new Request());
-            webApplication.Execute(new Request());
+            webApplication.Execute(Get());
+            webApplication.Execute(Get());
 
             webApplication.Stop();
             i.Should().Be(2);
@@ -76,7 +89,7 @@ namespace Frank.EndToEndTests
                 }))
                 .StartTesting();
 
-            webApplication.Execute(new Request());
+            webApplication.Execute(Get());
 
             customContext._list.Should().ContainInOrder(
                 "before", "request", "route-handler", "after"
