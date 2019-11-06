@@ -52,7 +52,7 @@ namespace Frank.Tests.Plugins.HttpListener
             request.GetResponse();
         }
         
-        private void AssertHeadersContain(string key, string expected) 
+        private void AssertThatThisHeaderIsPresent(string key, string expected) 
             => _response.Headers
                 .FirstOrDefault(p => p.Name == key)
                 .Value
@@ -145,9 +145,10 @@ namespace Frank.Tests.Plugins.HttpListener
 
             MakeRequest("http://127.0.0.1:8020", "/", Method.GET);
 
-            AssertHeadersContain("X-Authentication-Scheme", "DangerousBespoke");
-            AssertHeadersContain("Content-Type", "plain/text");
-            AssertHeadersContain("Server", "FrankServer");
+            AssertThatThisHeaderIsPresent("X-Authentication-Scheme", "DangerousBespoke");
+            AssertThatThisHeaderIsPresent("Content-Type", "plain/text");
+            var serverHeader = (string) _response.Headers.FirstOrDefault(h => h.Name == "Server").Value;
+            serverHeader.Should().StartWith("FrankServer");
             AssertContentIs("Hello world");
             AssertStatusIsOk();
         }
