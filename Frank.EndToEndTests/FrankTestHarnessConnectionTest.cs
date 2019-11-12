@@ -18,7 +18,7 @@ namespace Frank.EndToEndTests
 
             var response = webApplication.Execute(Get());
 
-            response.Status.Should().Be(404);
+            response.AssertIsNotFound();
         }
 
         [Test]
@@ -35,16 +35,21 @@ namespace Frank.EndToEndTests
 
             {
                 var response = webApplication.Execute(Get());
-                response.Status.Should().Be(200);
-                response.Body.Should().Be("{\"a\":123}");
+                response.AssertIsOk();
+                response.AssertJsonBodyMatches(new {a = 123});
             }
 
             {
                 var response = webApplication.Execute(Post().WithPath("/post"));
-                response.Status.Should().Be(200);
-                response.Body.Should().Be(
-                    "{\"Path\":\"/post\",\"Body\":\"\",\"QueryParameters\":{},\"Headers\":{},\"Method\":\"POST\"}"
-                );
+                response.AssertIsOk();
+                response.AssertJsonBodyMatches(new
+                {
+                    Path = "/post",
+                    Body = "",
+                    QueryParameters = new {},
+                    Headers = new {},
+                    Method = "POST"
+                });
             }
 
             webApplication.Stop();
@@ -53,18 +58,18 @@ namespace Frank.EndToEndTests
         [Test]
         public void ItCallsOnRequestOncePerRequest()
         {
-            var i = 0;
+            var numberOfTimesOnRequestCalled = 0;
             ITestWebApplication webApplication = Server
                 .Configure()
                 .OnRequest(
-                    _ => i++
+                    _ => numberOfTimesOnRequestCalled++
                 ).StartTesting();
 
             webApplication.Execute(Get());
             webApplication.Execute(Get());
 
             webApplication.Stop();
-            i.Should().Be(2);
+            numberOfTimesOnRequestCalled.Should().Be(2);
         }
 
         [Test]
