@@ -11,27 +11,29 @@ namespace Frank.Tests.Plugins.TestHarness
     {
         private bool _startCalled;
         private bool _stopCalled;
-        private Request? _arg1;
+        private Request? _lastRequest;
         private Response _nextResponse;
 
         public void Start() => _startCalled = true;
 
         public void Stop() => _stopCalled = true;
 
+        private Request LastRequest() => _lastRequest.Value;
+
         [SetUp]
         public void SetUp()
         {
             _startCalled = false;
             _stopCalled = false;
-            _arg1 = null;
+            _lastRequest = null;
             _nextResponse = new Response{Status = 404};
         }
 
-        private void ProcessRequest(Request arg1, IResponseBuffer arg2)
+        private void ProcessRequest(Request request, IResponseBuffer responseBuffer)
         {
-            _arg1 = arg1;
-            arg2.SetContentsOfBufferTo(_nextResponse);
-            arg2.Flush();
+            _lastRequest = request;
+            responseBuffer.SetContentsOfBufferTo(_nextResponse);
+            responseBuffer.Flush();
         }
 
         [Test]
@@ -56,12 +58,11 @@ namespace Frank.Tests.Plugins.TestHarness
             {
                 Method = "GET"
             });
-
-            _arg1.Value.Method.Should().Be("GET");
-            response.Status.Should().Be(404);
-
+            
+            LastRequest().Method.Should().Be("GET");
+            response.AssertIsNotFound();
         }
-        
+
         [Test]
         public void CanCallRequestHandler2()
         {
@@ -78,9 +79,9 @@ namespace Frank.Tests.Plugins.TestHarness
                 Method = "POST"
             });
 
-            _arg1.Value.Path.Should().Be("/");
-            _arg1.Value.Method.Should().Be("POST");
-            response.Status.Should().Be(200);
+            LastRequest().Path.Should().Be("/");
+            LastRequest().Method.Should().Be("POST");
+            response.AssertIsOk();
         }
     }
 }
