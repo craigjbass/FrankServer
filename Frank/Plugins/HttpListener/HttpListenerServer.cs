@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Specialized;
 using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
 using Frank.ExtensionPoints;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers.DTO;
@@ -57,7 +53,7 @@ namespace Frank.Plugins.HttpListener
                 catch (HttpListenerException exception)
                 {
                     var notAnAbortedConnectionException = exception.ErrorCode != 995;
-                    if (notAnAbortedConnectionException) throw exception;
+                    if (notAnAbortedConnectionException) throw;
                 }
             };
         }

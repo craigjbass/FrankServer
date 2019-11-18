@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using FluentAssertions;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
@@ -96,7 +95,7 @@ namespace Frank.EndToEndTests
 
             webApplication.Execute(Get());
 
-            customContext._list.Should().ContainInOrder(
+            customContext.List.Should().ContainInOrder(
                 "before", "request", "route-handler", "after"
             );
         }

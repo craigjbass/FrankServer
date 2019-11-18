@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Net;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers.DTO;

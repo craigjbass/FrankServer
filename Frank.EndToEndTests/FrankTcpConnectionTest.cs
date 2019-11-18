@@ -64,9 +64,9 @@ namespace Frank.EndToEndTests
             {
                 StopFrank();
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                if (!_expectExceptionInTeardown) throw e;
+                if (!_expectExceptionInTeardown) throw;
 
                 thrown = true;
             }
@@ -256,7 +256,7 @@ namespace Frank.EndToEndTests
                 new RestRequest("/", Method.GET)
             );
 
-            customContext._list.Should().ContainInOrder(
+            customContext.List.Should().ContainInOrder(
                 "before", "request", "route-handler", "after"
             );
 

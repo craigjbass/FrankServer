@@ -1,5 +1,4 @@
-﻿using System;
-using Frank.API.WebDevelopers;
+﻿using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
 using static Frank.API.WebDevelopers.DTO.ResponseConstructors;
 
@@ -11,10 +10,6 @@ namespace SampleProject
         class ExampleDatabaseConnection
         {
             public void Close()
-            {
-            }
-
-            public void Query()
             {
             }
         }

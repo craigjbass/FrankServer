@@ -47,7 +47,7 @@ namespace Frank.Internals
         {
             return new WebApplication(
                 server,
-                _onRequest ?? ((_,_2) => { }),
+                _onRequest ?? ((_,__) => { }),
                 _onBefore ?? (() => null),
                 _onAfter ?? ((_) => {})
             );
