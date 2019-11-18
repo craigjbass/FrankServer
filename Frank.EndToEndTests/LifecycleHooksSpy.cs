@@ -4,26 +4,26 @@ namespace Frank.EndToEndTests
 {
     class LifecycleHooksSpy
     {
-        public readonly List<string> List = new List<string>();
+        public readonly List<string> OrderThatMethodsWereCalled = new List<string>();
 
         public void Before()
         {
-            List.Add("before");
+            OrderThatMethodsWereCalled.Add("before");
         }
 
         public void After()
         {
-            List.Add("after");
+            OrderThatMethodsWereCalled.Add("after");
         }
 
         public void Request()
         {
-            List.Add("request");
+            OrderThatMethodsWereCalled.Add("request");
         }
 
         public void RouteHandler()
         {
-            List.Add("route-handler");
+            OrderThatMethodsWereCalled.Add("route-handler");
         }
     }
 }

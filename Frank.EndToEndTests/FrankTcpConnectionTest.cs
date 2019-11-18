@@ -256,7 +256,7 @@ namespace Frank.EndToEndTests
                 new RestRequest("/", Method.GET)
             );
 
-            customContext.List.Should().ContainInOrder(
+            customContext.OrderThatMethodsWereCalled.Should().ContainInOrder(
                 "before", "request", "route-handler", "after"
             );
 

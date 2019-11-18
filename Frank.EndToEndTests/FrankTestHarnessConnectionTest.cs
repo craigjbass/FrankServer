@@ -95,7 +95,7 @@ namespace Frank.EndToEndTests
 
             webApplication.Execute(Get());
 
-            customContext.List.Should().ContainInOrder(
+            customContext.OrderThatMethodsWereCalled.Should().ContainInOrder(
                 "before", "request", "route-handler", "after"
             );
         }
