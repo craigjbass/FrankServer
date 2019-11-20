@@ -11,6 +11,5 @@ namespace Frank.API.WebDevelopers
     {
         int Status { get; }
         string Body { get; }
-        dynamic DeserializeBody();
     }
 }

@@ -2,7 +2,6 @@ using System.Text;
 using Frank.API.PluginDevelopers;
 using Frank.API.WebDevelopers;
 using Frank.API.WebDevelopers.DTO;
-using Newtonsoft.Json;
 
 namespace Frank.Plugins.TestHarness
 {
@@ -41,6 +40,5 @@ namespace Frank.Plugins.TestHarness
         public int Status => _response.Status;
 
         public string Body => Encoding.UTF8.GetString(_response.Body);
-        public dynamic DeserializeBody() => JsonConvert.DeserializeObject(Body);
     }
 }
