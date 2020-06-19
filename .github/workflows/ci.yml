@@ -2,7 +2,7 @@ name: .NET Core CI
 on:
   push:
     branches:
-      - master
+      - trunk
 jobs:
   build-and-test:
     strategy:
