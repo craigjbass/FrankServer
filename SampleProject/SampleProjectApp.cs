@@ -22,8 +22,9 @@ namespace SampleProject
                 .OnRequest(
                     (route, dbConnection) =>
                     {
-                        route.Get("/test").To(Test);
-                        route.Get("/hello").To(Hello);
+                        route.Get("/test").To(Test)
+                            .Get("/hello").To(Hello)
+                            .Get("/three").To(Test);
                     }
                 );
         }

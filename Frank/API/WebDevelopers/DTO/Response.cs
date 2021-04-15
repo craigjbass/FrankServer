@@ -19,9 +19,9 @@ namespace Frank.API.WebDevelopers.DTO
             return response;
         }
         
-        public static Response WithHeader(this Response response, string xHeaderHere, string aValue)
+        public static Response WithHeader(this Response response, string key, string value)
         {
-            response.Headers.Add(xHeaderHere, aValue);
+            response.Headers.Add(key, value);
             return response;
         }
         

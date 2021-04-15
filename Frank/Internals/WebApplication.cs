@@ -16,6 +16,7 @@ namespace Frank.Internals
         private readonly Action<IRouteConfigurer, object> _onRequest;
         private readonly Func<object> _onBefore;
         private readonly Action<object> _onAfter;
+        private RequestRouter _router;
 
         internal interface IRequestRouter
         {
@@ -46,10 +47,8 @@ namespace Frank.Internals
 
         private void ProcessRequest(Request request, IResponseBuffer responseBuffer)
         {
-            var context = _onBefore();
-            var router = new RequestRouter();
-            _onRequest(router, context);
-
+            SetupRouter(_onBefore());
+            var router = GetRouter();
             try
             {
                 if (router.CanRoute(request.Path))
@@ -72,8 +71,16 @@ namespace Frank.Internals
             finally
             {
                 responseBuffer.Flush();
-                _onAfter(context);
+                _onAfter(_onBefore());
             }
+        }
+
+        private IRequestRouter GetRouter() => _router;
+
+        private void SetupRouter(object context)
+        {
+            _router = new RequestRouter();
+            _onRequest(_router, context);
         }
 
         public void Stop()
