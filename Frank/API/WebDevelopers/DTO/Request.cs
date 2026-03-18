@@ -9,6 +9,8 @@ namespace Frank.API.WebDevelopers.DTO
         public IReadOnlyDictionary<string, string> QueryParameters;
         public IReadOnlyDictionary<string, string> Headers;
         public string Method;
+        public IReadOnlyDictionary<string, string> Cookies;
+        public Authentication Authentication;
     }
 
     public static class RequestConstructors
@@ -24,7 +26,9 @@ namespace Frank.API.WebDevelopers.DTO
                 Body = "",
                 QueryParameters = new Dictionary<string, string>(),
                 Headers = new Dictionary<string, string>(),
-                Method = method
+                Method = method,
+                Cookies = new Dictionary<string, string>(),
+                Authentication = new Authentication()
             };
     }
 
@@ -33,6 +37,18 @@ namespace Frank.API.WebDevelopers.DTO
         public static Request WithPath(this Request request, string path)
         {
             request.Path = path;
+            return request;
+        }
+
+        public static Request WithCookies(this Request request, IReadOnlyDictionary<string, string> cookies)
+        {
+            request.Cookies = cookies;
+            return request;
+        }
+
+        public static Request WithAuthentication(this Request request, Authentication authentication)
+        {
+            request.Authentication = authentication;
             return request;
         }
     }

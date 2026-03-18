@@ -262,5 +262,86 @@ namespace Frank.EndToEndTests
 
             _expectExceptionInTeardown = true;
         }
+
+        [Test]
+        public void CanDeserializeIncomingCookies()
+        {
+            Request? processedRequest = null;
+            StartFrankWithRoutes(
+                router =>
+                {
+                    router.Get("/foo")
+                        .To(request =>
+                            {
+                                processedRequest = request;
+                                return Ok();
+                            }
+                        );
+                }
+            );
+
+            new RestClient("http://127.0.0.1:8019/").Execute(
+                new RestRequest("/foo", Method.Get)
+                    .AddHeader("Cookie", "session=abc123; theme=dark")
+            );
+
+            processedRequest.Should().NotBeNull();
+            processedRequest?.Cookies["session"].Should().Be("abc123");
+            processedRequest?.Cookies["theme"].Should().Be("dark");
+        }
+
+        [Test]
+        public void CanDeserializeBasicAuthentication()
+        {
+            Request? processedRequest = null;
+            StartFrankWithRoutes(
+                router =>
+                {
+                    router.Get("/foo")
+                        .To(request =>
+                            {
+                                processedRequest = request;
+                                return Ok();
+                            }
+                        );
+                }
+            );
+
+            new RestClient("http://127.0.0.1:8019/").Execute(
+                new RestRequest("/foo", Method.Get)
+                    .AddHeader("Authorization", "Basic dXNlcjpwYXNz")
+            );
+
+            processedRequest.Should().NotBeNull();
+            processedRequest?.Authentication.Scheme.Should().Be("Basic");
+            processedRequest?.Authentication.Parameter.Should().Be("dXNlcjpwYXNz");
+        }
+
+        [Test]
+        public void CanDeserializeBearerAuthentication()
+        {
+            Request? processedRequest = null;
+            StartFrankWithRoutes(
+                router =>
+                {
+                    router.Get("/foo")
+                        .To(request =>
+                            {
+                                processedRequest = request;
+                                return Ok();
+                            }
+                        );
+                }
+            );
+
+            new RestClient("http://127.0.0.1:8019/").Execute(
+                new RestRequest("/foo", Method.Get)
+                    .AddHeader("Authorization", "Bearer mytoken123")
+            );
+
+            processedRequest.Should().NotBeNull();
+            processedRequest?.Authentication.Scheme.Should().Be("Bearer");
+            processedRequest?.Authentication.Parameter.Should().Be("mytoken123");
+        }
     }
 }

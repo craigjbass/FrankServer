@@ -47,7 +47,9 @@ namespace Frank.EndToEndTests
                     Body = "",
                     QueryParameters = new {},
                     Headers = new {},
-                    Method = "POST"
+                    Method = "POST",
+                    Cookies = new {},
+                    Authentication = new { Scheme = (string)null, Parameter = (string)null }
                 });
             }
 
