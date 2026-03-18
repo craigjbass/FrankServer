@@ -71,5 +71,23 @@ namespace Frank.Tests.Plugins.HttpListener
         {
             FirstRequest().Body.Should().Be(expectedBody);
         }
+
+        public void AssertCookiesContain(string expectedName, string expectedValue) =>
+            FirstRequest().Cookies[expectedName].Should().Be(expectedValue);
+
+        public void AssertThatThereAreNoCookies() =>
+            FirstRequest().Cookies.Should().BeEmpty();
+
+        public void AssertAuthenticationSchemeIs(string expectedScheme) =>
+            FirstRequest().Authentication.Scheme.Should().Be(expectedScheme);
+
+        public void AssertAuthenticationParameterIs(string expectedParameter) =>
+            FirstRequest().Authentication.Parameter.Should().Be(expectedParameter);
+
+        public void AssertThatThereIsNoAuthentication()
+        {
+            FirstRequest().Authentication.Scheme.Should().BeNull();
+            FirstRequest().Authentication.Parameter.Should().BeNull();
+        }
     }
 }

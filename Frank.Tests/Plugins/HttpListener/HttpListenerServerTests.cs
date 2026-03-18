@@ -133,6 +133,76 @@ namespace Frank.Tests.Plugins.HttpListener
         }
 
         [Test]
+        public void CanDeserialiseRequestCookies()
+        {
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok());
+
+            MakeRequest(
+                "http://127.0.0.1:8020",
+                "/", Method.Get,
+                r => r.AddHeader("Cookie", "session=abc123; theme=dark")
+            );
+
+            _requestHandlerMock.AssertCookiesContain("session", "abc123");
+            _requestHandlerMock.AssertCookiesContain("theme", "dark");
+        }
+
+        [Test]
+        public void CanDeserialiseRequestWithNoCookies()
+        {
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok());
+
+            MakeAnEmptyGetRequest("http://127.0.0.1:8020");
+
+            _requestHandlerMock.AssertThatThereAreNoCookies();
+        }
+
+        [Test]
+        public void CanDeserialiseBasicAuthentication()
+        {
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok());
+
+            MakeRequest(
+                "http://127.0.0.1:8020",
+                "/", Method.Get,
+                r => r.AddHeader("Authorization", "Basic dXNlcjpwYXNz")
+            );
+
+            _requestHandlerMock.AssertAuthenticationSchemeIs("Basic");
+            _requestHandlerMock.AssertAuthenticationParameterIs("dXNlcjpwYXNz");
+        }
+
+        [Test]
+        public void CanDeserialiseBearerAuthentication()
+        {
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok());
+
+            MakeRequest(
+                "http://127.0.0.1:8020",
+                "/", Method.Get,
+                r => r.AddHeader("Authorization", "Bearer mytoken123")
+            );
+
+            _requestHandlerMock.AssertAuthenticationSchemeIs("Bearer");
+            _requestHandlerMock.AssertAuthenticationParameterIs("mytoken123");
+        }
+
+        [Test]
+        public void CanDeserialiseRequestWithNoAuthentication()
+        {
+            StartServer();
+            _requestHandlerMock.SetupRequestHandlerToRespondWith(Ok());
+
+            MakeAnEmptyGetRequest("http://127.0.0.1:8020");
+
+            _requestHandlerMock.AssertThatThereIsNoAuthentication();
+        }
+
+        [Test]
         public void CanSerialiseAnHttpResponse()
         {
             StartServer();
