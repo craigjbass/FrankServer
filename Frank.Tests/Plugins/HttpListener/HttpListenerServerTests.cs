@@ -14,7 +14,7 @@ namespace Frank.Tests.Plugins.HttpListener
     [NonParallelizable]
     public class HttpListenerServerTests
     {
-        private IRestResponse _response;
+        private RestResponse _response;
         private VerifyingRequestHandlerMock _requestHandlerMock;
         private HttpListenerServer _httpListenerServer;
 
@@ -40,8 +40,8 @@ namespace Frank.Tests.Plugins.HttpListener
 
             (requestBuilder ?? (r => { }))(request);
 
-            request.Timeout = 100;
-            var client = new RestClient(url);
+            var options = new RestClientOptions(url) { Timeout = TimeSpan.FromMilliseconds(100) };
+            var client = new RestClient(options);
             _response = client.Execute(request);
         }
 
@@ -53,13 +53,13 @@ namespace Frank.Tests.Plugins.HttpListener
         }
         
         private void AssertThatThisHeaderIsPresent(string key, string expected) 
-            => _response.Headers
+            => _response.Headers.Concat(_response.ContentHeaders)
                 .FirstOrDefault(p => p.Name == key)
                 .Value
                 .Should()
                 .Be(expected);
 
-        private void AssertStatusCodeIs(int expected) => _response.StatusCode.Should().Be(expected);
+        private void AssertStatusCodeIs(int expected) => ((int)_response.StatusCode).Should().Be(expected);
 
         private void AssertTimedOut() => _response.ResponseStatus.Should().Be(ResponseStatus.TimedOut);
 
@@ -71,7 +71,7 @@ namespace Frank.Tests.Plugins.HttpListener
         public void TimesOutWhenNoRequestProcessorRegistered()
         {
             _httpListenerServer.Start();
-            MakeRequest("http://127.0.0.1:8020", "/", Method.GET);
+            MakeRequest("http://127.0.0.1:8020", "/", Method.Get);
             AssertTimedOut();
         }
 
@@ -99,7 +99,7 @@ namespace Frank.Tests.Plugins.HttpListener
 
             MakeRequest(
                 "http://127.0.0.1:8020",
-                "/asd", Method.GET,
+                "/asd", Method.Get,
                 r => { r.AddParameter("j", "nice"); }
             );
 
@@ -116,7 +116,7 @@ namespace Frank.Tests.Plugins.HttpListener
 
             MakeRequest(
                 "http://127.0.0.1:8020",
-                "/asd", Method.POST,
+                "/asd", Method.Post,
                 r =>
                 {
                     r.AddQueryParameter("z", "123");
@@ -143,11 +143,11 @@ namespace Frank.Tests.Plugins.HttpListener
                     .BodyFromString("Hello world")
             );
 
-            MakeRequest("http://127.0.0.1:8020", "/", Method.GET);
+            MakeRequest("http://127.0.0.1:8020", "/", Method.Get);
 
             AssertThatThisHeaderIsPresent("X-Authentication-Scheme", "DangerousBespoke");
             AssertThatThisHeaderIsPresent("Content-Type", "plain/text");
-            var serverHeader = (string) _response.Headers.FirstOrDefault(h => h.Name == "Server").Value;
+            var serverHeader = (string) _response.Headers.Concat(_response.ContentHeaders).FirstOrDefault(h => h.Name == "Server").Value;
             serverHeader.Should().StartWith("FrankServer");
             AssertContentIs("Hello world");
             AssertStatusIsOk();
