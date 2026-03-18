@@ -6,11 +6,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 5.0.201
+        dotnet-version: 8.0.x
     - name: Pack
       run: dotnet pack -p:PackageVersion=${{ github.event.release.tag_name }}
     - name: Publish

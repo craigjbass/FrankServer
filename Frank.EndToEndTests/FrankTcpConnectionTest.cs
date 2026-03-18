@@ -19,19 +19,19 @@ namespace Frank.EndToEndTests
     {
         private IWebApplicationBuilder _builder;
         private IWebApplication _webApplication;
-        private IRestResponse _response;
+        private RestResponse _response;
         private int _port;
         private bool _expectExceptionInTeardown;
 
         private void MakeGetRequest(string path)
         {
-            var request = new RestRequest(path, Method.GET);
+            var request = new RestRequest(path, Method.Get);
             var client = new RestClient($"http://127.0.0.1:{_port}/");
 
             _response = client.Execute(request);
         }
 
-        private IRestResponse TheResponse()
+        private RestResponse TheResponse()
         {
             if (_response.StatusCode == HttpStatusCode.InternalServerError)
             {
@@ -99,10 +99,10 @@ namespace Frank.EndToEndTests
             StartFrank();
 
             MakeGetRequest("/");
-            TheResponse().StatusCode.Should().Be(404);
+            ((int)TheResponse().StatusCode).Should().Be(404);
 
             MakeGetRequest("/another-route");
-            TheResponse().StatusCode.Should().Be(404);
+            ((int)TheResponse().StatusCode).Should().Be(404);
         }
 
         [TestCase("/custom", 200, "Custom Body", "X-Header-Here", "A Value")]
@@ -125,12 +125,12 @@ namespace Frank.EndToEndTests
             StartFrank();
 
             var response = new RestClient("http://127.0.0.1:8019/").Execute(
-                new RestRequest(routePath, Method.GET)
+                new RestRequest(routePath, Method.Get)
             );
 
             response.Content.Should().Be(body);
-            response.StatusCode.Should().Be(status);
-            response.Headers.FirstOrDefault(h => h.Name == headerKey).Value.Should().Be(headerValue);
+            ((int)response.StatusCode).Should().Be(status);
+            response.Headers.Concat(response.ContentHeaders).FirstOrDefault(h => h.Name == headerKey).Value.Should().Be(headerValue);
         }
 
         [TestCase("/success")]
@@ -139,7 +139,7 @@ namespace Frank.EndToEndTests
         {
             StartFrankWithRoutes(router => { router.Get(route).To(Ok); });
             MakeGetRequest(route);
-            TheResponse().StatusCode.Should().Be(200);
+            ((int)TheResponse().StatusCode).Should().Be(200);
         }
 
         [Test]
@@ -148,7 +148,7 @@ namespace Frank.EndToEndTests
             _port = 8090;
             StartFrankWithRoutes(router => { router.Get("/created").To(Created); });
             MakeGetRequest("/created");
-            TheResponse().StatusCode.Should().Be(201);
+            ((int)TheResponse().StatusCode).Should().Be(201);
         }
 
         [Test]
@@ -164,7 +164,7 @@ namespace Frank.EndToEndTests
 
             MakeGetRequest("/foo/2");
 
-            TheResponse().StatusCode.Should().Be(200);
+            ((int)TheResponse().StatusCode).Should().Be(200);
             TheResponseBody()["Id"].Value<int>().Should().Be(2);
         }
 
@@ -186,7 +186,7 @@ namespace Frank.EndToEndTests
             );
 
             new RestClient("http://127.0.0.1:8019/").Execute(
-                new RestRequest("/foo/2", Method.GET)
+                new RestRequest("/foo/2", Method.Get)
                     .AddParameter("bar", "123")
                     .AddHeader("X-Api-Key", "1234supersecure")
             );
@@ -216,10 +216,10 @@ namespace Frank.EndToEndTests
             );
 
             new RestClient("http://127.0.0.1:8019/").Execute(
-                new RestRequest("/foo/2", Method.POST)
+                new RestRequest("/foo/2", Method.Post)
                     .AddQueryParameter("bar", "123")
                     .AddHeader("X-Api-Key", "1234supersecure")
-                    .AddJsonBody("This is the body!!")
+                    .AddStringBody(JsonConvert.SerializeObject("This is the body!!"), ContentType.Json)
             );
 
             processedRequest.Should().NotBeNull();
@@ -253,7 +253,7 @@ namespace Frank.EndToEndTests
             StartFrank();
 
             new RestClient("http://127.0.0.1:8019/").Execute(
-                new RestRequest("/", Method.GET)
+                new RestRequest("/", Method.Get)
             );
 
             customContext.OrderThatMethodsWereCalled.Should().ContainInOrder(
